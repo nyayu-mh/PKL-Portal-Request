@@ -75,18 +75,18 @@ class ErfShow extends Component
         session()->flash('success', 'ERF telah disetujui dan diteruskan ke HR.');
     }
 
-    public function reject(): void
+    public function requestRevision(): void
     {
         abort_unless($this->isApprover(), 403);
 
         $this->validate([
             'catatan_approval' => ['required', 'string'],
         ], [
-            'catatan_approval.required' => 'Mohon isi alasan/masukan revisi sebelum menolak.',
+            'catatan_approval.required' => 'Mohon isi alasan/masukan revisi sebelum meminta revisi.',
         ]);
 
         $this->erfRequest->update([
-            'approval_status' => 'ditolak',
+            'approval_status' => 'revisi',
             'catatan_approval_atasan' => $this->catatan_approval,
             'approved_at' => null,
         ]);
@@ -104,10 +104,41 @@ class ErfShow extends Component
         session()->flash('success', 'ERF dikembalikan ke pemohon untuk direvisi.');
     }
 
+    public function rejectFinal(): void
+    {
+        abort_unless($this->isApprover(), 403);
+
+        $this->validate([
+            'catatan_approval' => ['required', 'string'],
+        ], [
+            'catatan_approval.required' => 'Mohon isi alasan penolakan sebelum menolak ERF ini.',
+        ]);
+
+        $this->erfRequest->update([
+            'approval_status' => 'ditolak',
+            'catatan_approval_atasan' => $this->catatan_approval,
+            'approved_at' => null,
+            'status' => 'rejected',
+        ]);
+
+        ErfStatusHistory::create([
+            'erf_request_id' => $this->erfRequest->id,
+            'status' => 'rejected',
+            'changed_by_user_id' => Auth::id(),
+            'catatan' => 'Ditolak final oleh atasan ('.Auth::user()->name.'). Alasan: '.$this->catatan_approval,
+        ]);
+
+        $this->catatan_approval = '';
+        $this->status = 'rejected';
+        $this->erfRequest->refresh();
+
+        session()->flash('success', 'ERF ditolak. Request ini sudah ditutup (case closed).');
+    }
+
     public function cancel(): void
     {
         abort_unless($this->isOwner(), 403);
-        abort_unless(in_array($this->erfRequest->approval_status, ['menunggu', 'ditolak']), 403, 'ERF yang sudah disetujui/diproses tidak bisa dihapus sendiri. Hubungi HR/Admin.');
+        abort_unless(in_array($this->erfRequest->approval_status, ['menunggu', 'revisi']), 403, 'ERF yang sudah disetujui/diproses/ditolak tidak bisa dihapus sendiri. Hubungi HR/Admin.');
 
         $erfId = $this->erfRequest->erf_id;
         $this->erfRequest->delete();

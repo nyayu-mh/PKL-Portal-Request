@@ -103,18 +103,18 @@ class GaShow extends Component
         session()->flash('success', 'Request GA telah disetujui dan diteruskan ke tim GA.');
     }
 
-    public function reject(): void
+    public function requestRevision(): void
     {
         abort_unless($this->isApprover(), 403);
 
         $this->validate([
             'catatan_approval' => ['required', 'string'],
         ], [
-            'catatan_approval.required' => 'Mohon isi alasan/masukan revisi sebelum menolak.',
+            'catatan_approval.required' => 'Mohon isi alasan/masukan revisi sebelum meminta revisi.',
         ]);
 
         $this->gaRequest->update([
-            'approval_status' => 'ditolak',
+            'approval_status' => 'revisi',
             'catatan_approval_atasan' => $this->catatan_approval,
             'approved_at' => null,
         ]);
@@ -132,10 +132,41 @@ class GaShow extends Component
         session()->flash('success', 'Request GA dikembalikan ke pemohon untuk direvisi.');
     }
 
+    public function rejectFinal(): void
+    {
+        abort_unless($this->isApprover(), 403);
+
+        $this->validate([
+            'catatan_approval' => ['required', 'string'],
+        ], [
+            'catatan_approval.required' => 'Mohon isi alasan penolakan sebelum menolak request GA ini.',
+        ]);
+
+        $this->gaRequest->update([
+            'approval_status' => 'ditolak',
+            'catatan_approval_atasan' => $this->catatan_approval,
+            'approved_at' => null,
+            'status' => 'ditolak',
+        ]);
+
+        GaStatusHistory::create([
+            'ga_request_id' => $this->gaRequest->id,
+            'status' => 'ditolak',
+            'changed_by_user_id' => Auth::id(),
+            'catatan' => 'Ditolak final oleh atasan ('.Auth::user()->name.'). Alasan: '.$this->catatan_approval,
+        ]);
+
+        $this->catatan_approval = '';
+        $this->status = 'ditolak';
+        $this->gaRequest->refresh();
+
+        session()->flash('success', 'Request GA ditolak. Request ini sudah ditutup (case closed).');
+    }
+
     public function cancel(): void
     {
         abort_unless($this->isOwner(), 403);
-        abort_unless(in_array($this->gaRequest->approval_status, ['menunggu', 'ditolak']), 403, 'Request GA yang sudah disetujui/diproses tidak bisa dihapus sendiri. Hubungi GA/Admin.');
+        abort_unless(in_array($this->gaRequest->approval_status, ['menunggu', 'revisi']), 403, 'Request GA yang sudah disetujui/diproses/ditolak tidak bisa dihapus sendiri. Hubungi GA/Admin.');
 
         $gaId = $this->gaRequest->ga_id;
         $this->gaRequest->delete();

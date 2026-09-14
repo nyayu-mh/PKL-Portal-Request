@@ -20,32 +20,30 @@
 
     @include('livewire.master.partials.csv-import')
 
-    @if ($showForm)
-        <x-card :title="$editingId ? 'Edit Tanggal' : 'Tambah Tanggal'" class="mb-6">
-            <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Tanggal</label>
-                    <input type="date" wire:model="tanggal" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    @error('tanggal') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Tipe</label>
-                    <select wire:model="tipe" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="libur">Libur (walau hari kerja biasa)</option>
-                        <option value="kerja">Masuk Kerja (walau weekend)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Keterangan</label>
-                    <input type="text" wire:model="keterangan" placeholder="Contoh: Hari Raya Idul Fitri" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-                <div class="sm:col-span-3 flex justify-end gap-3">
-                    <button type="button" wire:click="resetForm" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Batal</button>
-                    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan</button>
-                </div>
-            </form>
-        </x-card>
-    @endif
+    <x-modal :show="$showForm" :title="$editingId ? 'Edit Tanggal' : 'Tambah Tanggal'">
+        <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Tanggal</label>
+                <input type="date" wire:model="tanggal" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('tanggal') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Tipe</label>
+                <select wire:model="tipe" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="libur">Libur (walau hari kerja biasa)</option>
+                    <option value="kerja">Masuk Kerja (walau weekend)</option>
+                </select>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Keterangan</label>
+                <input type="text" wire:model="keterangan" placeholder="Contoh: Hari Raya Idul Fitri" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div class="sm:col-span-2 flex justify-end gap-3 border-t border-slate-100 pt-4">
+                <button type="button" wire:click="resetForm" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Batal</button>
+                <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan</button>
+            </div>
+        </form>
+    </x-modal>
 
     <x-card>
         <div class="-mx-5 overflow-x-auto">

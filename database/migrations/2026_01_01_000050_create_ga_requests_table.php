@@ -26,7 +26,9 @@ return new class extends Migration
             $table->text('catatan')->nullable();
 
             // Approval atasan langsung di aplikasi (menggantikan lampiran approval manual)
-            $table->enum('approval_status', ['tidak_perlu', 'menunggu', 'disetujui', 'ditolak'])->default('tidak_perlu');
+            // revisi = dikembalikan ke pemohon untuk diedit & diajukan ulang (masih bisa lanjut)
+            // ditolak = ditolak final oleh atasan, case closed (tidak bisa direvisi/diajukan ulang)
+            $table->enum('approval_status', ['tidak_perlu', 'menunggu', 'disetujui', 'revisi', 'ditolak'])->default('tidak_perlu');
             $table->foreignId('atasan_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->text('catatan_approval_atasan')->nullable();
             $table->timestamp('approved_at')->nullable();

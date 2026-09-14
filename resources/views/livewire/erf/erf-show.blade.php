@@ -48,10 +48,18 @@
                         <span class="text-sm text-slate-500">Atasan: {{ $erfRequest->atasan->name ?? '-' }}</span>
                     </div>
 
-                    @if ($erfRequest->approval_status === 'ditolak' && $erfRequest->catatan_approval_atasan)
-                        <div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    @if ($erfRequest->approval_status === 'revisi' && $erfRequest->catatan_approval_atasan)
+                        <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                             <p class="font-medium">Catatan revisi:</p>
                             <p class="mt-1 whitespace-pre-line">{{ $erfRequest->catatan_approval_atasan }}</p>
+                        </div>
+                    @endif
+
+                    @if ($erfRequest->approval_status === 'ditolak')
+                        <div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                            <p class="font-medium">Alasan ditolak:</p>
+                            <p class="mt-1 whitespace-pre-line">{{ $erfRequest->catatan_approval_atasan ?: '-' }}</p>
+                            <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-rose-500">Case closed &mdash; request ini sudah final, tidak bisa direvisi atau diajukan ulang.</p>
                         </div>
                     @endif
 
@@ -64,20 +72,21 @@
                     @if ($isApprover)
                         <form class="space-y-3">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">Catatan <span class="text-slate-400">(wajib diisi kalau menolak)</span></label>
+                                <label class="mb-1 block text-sm font-medium text-slate-700">Catatan <span class="text-slate-400">(wajib diisi kalau minta revisi / menolak)</span></label>
                                 <textarea wire:model="catatan_approval" rows="2" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
                                 @error('catatan_approval') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                             </div>
-                            <div class="flex gap-3">
+                            <div class="flex flex-wrap gap-3">
                                 <button type="button" wire:click="approve" wire:confirm="Setujui ERF ini?" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Setujui</button>
-                                <button type="button" wire:click="reject" class="rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50">Kembalikan untuk Revisi</button>
+                                <button type="button" wire:click="requestRevision" class="rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-600 hover:bg-amber-50">Kembalikan untuk Revisi</button>
+                                <button type="button" wire:click="rejectFinal" wire:confirm="Tolak ERF ini secara final? Setelah ditolak, request TIDAK BISA direvisi/diajukan ulang lagi (case closed)." class="rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50">Tolak</button>
                             </div>
                         </form>
                     @endif
 
-                    @if ($isOwner && in_array($erfRequest->approval_status, ['menunggu', 'ditolak']))
+                    @if ($isOwner && in_array($erfRequest->approval_status, ['menunggu', 'revisi']))
                         <div class="flex gap-3 {{ $isApprover ? 'mt-4 border-t border-slate-100 pt-4' : '' }}">
-                            @if ($erfRequest->approval_status === 'ditolak')
+                            @if ($erfRequest->approval_status === 'revisi')
                                 <a href="{{ route('erf.edit', $erfRequest) }}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Edit &amp; Ajukan Ulang</a>
                             @endif
                             <button type="button" wire:click="cancel" wire:confirm="Yakin ingin menghapus request ini?" class="rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50">Hapus Request</button>
@@ -86,7 +95,7 @@
                 </x-card>
             @endif
 
-            @if ($canManage && ! $erfRequest->isApprovedForProcessing())
+            @if ($canManage && ! $erfRequest->isApprovedForProcessing() && ! $erfRequest->isRejectedFinal())
                 <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                     ERF ini belum bisa diproses HR — masih {{ strtolower($erfRequest->approvalStatusLabel()) }}.
                 </div>

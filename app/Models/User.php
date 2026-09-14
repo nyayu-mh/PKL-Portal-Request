@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -16,6 +17,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_id', 'is_active',
+        'akses_wookey_weight', 'akses_so_honey',
     ];
 
     protected $hidden = [
@@ -33,6 +35,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'akses_wookey_weight' => 'boolean',
+            'akses_so_honey' => 'boolean',
         ];
     }
 
@@ -59,7 +63,7 @@ class User extends Authenticatable
             'karyawan' => 'Karyawan',
             'hr' => 'Tim HR',
             'ga' => 'Tim General Affair',
-            'admin' => 'Administrator',
+            'admin' => 'Super Admin',
         ];
     }
 
@@ -118,5 +122,27 @@ class User extends Authenticatable
     public function atasan(): BelongsTo
     {
         return $this->belongsTo(User::class, 'atasan_id');
+    }
+
+    // ── Riwayat pemakaian (dipakai untuk cek aman/tidaknya hapus user) ──
+
+    public function erfRequestsAsPemohon(): HasMany
+    {
+        return $this->hasMany(ErfRequest::class, 'user_id');
+    }
+
+    public function erfRequestsAsAtasan(): HasMany
+    {
+        return $this->hasMany(ErfRequest::class, 'atasan_user_id');
+    }
+
+    public function gaRequestsAsPemohon(): HasMany
+    {
+        return $this->hasMany(GaRequest::class, 'user_id');
+    }
+
+    public function gaRequestsAsAtasan(): HasMany
+    {
+        return $this->hasMany(GaRequest::class, 'atasan_user_id');
     }
 }

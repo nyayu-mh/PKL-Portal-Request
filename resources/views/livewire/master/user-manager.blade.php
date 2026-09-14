@@ -23,8 +23,7 @@
 
     @include('livewire.master.partials.csv-import')
 
-    @if ($showForm)
-        <x-card :title="$editingId ? 'Edit User' : 'Tambah User'" class="mb-6">
+    <x-modal :show="$showForm" :title="$editingId ? 'Edit User' : 'Tambah User'">
             <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <label class="mb-1 block text-sm font-medium text-slate-700">Nama</label>
@@ -80,17 +79,29 @@
                     @error('atasan_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     <p class="mt-1 text-xs text-slate-400">Wajib diisi untuk user dengan level Junior Leader / Leader agar bisa mengajukan ERF/GA (perlu approval atasan sebelum diproses HR/GA).</p>
                 </div>
+                <div class="sm:col-span-2">
+                    <label class="mb-1 block text-sm font-medium text-slate-700">Akses Brand</label>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="flex items-center gap-2 text-sm text-slate-700">
+                            <input type="checkbox" wire:model="akses_wookey_weight" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                            Wookey Weight
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-slate-700">
+                            <input type="checkbox" wire:model="akses_so_honey" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                            So Honey
+                        </label>
+                    </div>
+                </div>
                 <label class="flex items-center gap-2 text-sm text-slate-700">
                     <input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                     Akun Aktif (bisa login)
                 </label>
-                <div class="sm:col-span-2 flex justify-end gap-3">
+                <div class="sm:col-span-2 flex justify-end gap-3 border-t border-slate-100 pt-4">
                     <button type="button" wire:click="resetForm" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Batal</button>
                     <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan</button>
                 </div>
             </form>
-        </x-card>
-    @endif
+    </x-modal>
 
     <x-card>
         <input type="text" wire:model.live.debounce.400ms="search" placeholder="Cari nama / email..." class="mb-4 w-full max-w-xs rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -105,6 +116,7 @@
                         <th class="px-5 py-3 font-medium">Level</th>
                         <th class="px-5 py-3 font-medium">Role</th>
                         <th class="px-5 py-3 font-medium">Atasan Langsung</th>
+                        <th class="px-5 py-3 font-medium">Brand</th>
                         <th class="px-5 py-3 font-medium">Status</th>
                         <th class="px-5 py-3 font-medium text-right">Aksi</th>
                     </tr>
@@ -118,6 +130,16 @@
                             <td class="px-5 py-3 text-slate-600">{{ $item->jabatanLevelLabel() }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $item->roleLabel() }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $item->atasan->name ?? '-' }}</td>
+                            <td class="px-5 py-3 text-slate-600">
+                                @if ($item->akses_wookey_weight || $item->akses_so_honey)
+                                    <div class="flex flex-wrap gap-1">
+                                        @if ($item->akses_wookey_weight)<x-status-badge color="indigo" label="Wookey Weight" />@endif
+                                        @if ($item->akses_so_honey)<x-status-badge color="orange" label="So Honey" />@endif
+                                    </div>
+                                @else
+                                    <span class="text-slate-400">-</span>
+                                @endif
+                            </td>
                             <td class="px-5 py-3">
                                 @if ($item->is_active)
                                     <x-status-badge color="emerald" label="Aktif" />
@@ -127,11 +149,12 @@
                             </td>
                             <td class="px-5 py-3 text-right">
                                 <button wire:click="edit({{ $item->id }})" class="mr-2 text-xs font-medium text-indigo-600 hover:underline">Edit</button>
-                                <button wire:click="toggleActive({{ $item->id }})" class="text-xs font-medium text-slate-500 hover:underline">{{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                <button wire:click="toggleActive({{ $item->id }})" class="mr-2 text-xs font-medium text-slate-500 hover:underline">{{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                <button wire:click="delete({{ $item->id }})" wire:confirm="Hapus user {{ $item->name }}? Tindakan ini tidak bisa dibatalkan." class="text-xs font-medium text-rose-600 hover:underline">Hapus</button>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="px-5 py-10 text-center text-sm text-slate-400">Belum ada data user.</td></tr>
+                        <tr><td colspan="9" class="px-5 py-10 text-center text-sm text-slate-400">Belum ada data user.</td></tr>
                     @endforelse
                 </tbody>
             </table>

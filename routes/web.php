@@ -14,6 +14,7 @@ use App\Livewire\Master\JabatanTtfManager;
 use App\Livewire\Master\KalenderKerjaManager;
 use App\Livewire\Master\KaryawanManager;
 use App\Livewire\Master\UserManager;
+use App\Livewire\Setting\GroupAccessManager;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -51,11 +52,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/{gaRequest}', GaShow::class)->name('show');
     });
 
-    // Master data (HR & Admin, kecuali Manajemen User khusus Admin)
+    // Master data (HR & Admin)
     Route::prefix('master')->name('master.')->middleware('role:hr,admin')->group(function () {
         Route::get('/karyawan', KaryawanManager::class)->name('karyawan.index');
         Route::get('/jabatan-ttf', JabatanTtfManager::class)->name('jabatan-ttf.index');
         Route::get('/kalender-kerja', KalenderKerjaManager::class)->name('kalender-kerja.index');
+        // Konten menyusul — dibuat placeholder dulu supaya menu & submenu sudah tersedia.
+        Route::get('/divisi', fn () => (new PlaceholderController)->show('Master Data — Divisi', 'Data Divisi akan dilengkapi menyusul.'))->name('divisi.index');
+        Route::get('/jabatan', fn () => (new PlaceholderController)->show('Master Data — Jabatan', 'Data Jabatan akan dilengkapi menyusul.'))->name('jabatan.index');
     });
-    Route::get('/master/users', UserManager::class)->name('master.users.index')->middleware('role:admin');
+
+    // Setting (khusus Super Admin)
+    Route::prefix('setting')->name('setting.')->middleware('role:admin')->group(function () {
+        Route::get('/users', UserManager::class)->name('users.index');
+        Route::get('/grup-akses', GroupAccessManager::class)->name('grup-akses.index');
+    });
 });

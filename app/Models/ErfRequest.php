@@ -37,7 +37,8 @@ class ErfRequest extends Model
             'tidak_perlu' => 'Tidak Perlu Approval',
             'menunggu' => 'Menunggu Approval Atasan',
             'disetujui' => 'Disetujui Atasan',
-            'ditolak' => 'Perlu Revisi',
+            'revisi' => 'Perlu Revisi',
+            'ditolak' => 'Ditolak',
         ];
     }
 
@@ -52,9 +53,18 @@ class ErfRequest extends Model
             'tidak_perlu' => 'gray',
             'menunggu' => 'amber',
             'disetujui' => 'emerald',
+            'revisi' => 'orange',
             'ditolak' => 'rose',
             default => 'gray',
         };
+    }
+
+    /**
+     * Ditolak final oleh atasan — case closed, tidak bisa direvisi/diajukan ulang lagi.
+     */
+    public function isRejectedFinal(): bool
+    {
+        return $this->approval_status === 'ditolak';
     }
 
     /**

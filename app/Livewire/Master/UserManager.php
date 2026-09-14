@@ -38,6 +38,10 @@ class UserManager extends Component
 
     public bool $is_active = true;
 
+    public bool $akses_wookey_weight = false;
+
+    public bool $akses_so_honey = false;
+
     public bool $showForm = false;
 
     protected function rules(): array
@@ -57,6 +61,8 @@ class UserManager extends Component
             'role' => ['required', 'in:karyawan,hr,ga,admin'],
             'atasan_id' => ['nullable', 'exists:users,id', 'different:editingId'],
             'is_active' => ['boolean'],
+            'akses_wookey_weight' => ['boolean'],
+            'akses_so_honey' => ['boolean'],
         ];
     }
 
@@ -79,6 +85,8 @@ class UserManager extends Component
         $this->role = $u->role;
         $this->atasan_id = $u->atasan_id;
         $this->is_active = $u->is_active;
+        $this->akses_wookey_weight = $u->akses_wookey_weight;
+        $this->akses_so_honey = $u->akses_so_honey;
         $this->showForm = true;
     }
 
@@ -111,12 +119,45 @@ class UserManager extends Component
         $u->update(['is_active' => ! $u->is_active]);
     }
 
+    public function delete(int $id): void
+    {
+        $u = User::findOrFail($id);
+
+        if ($u->id === auth()->id()) {
+            session()->flash('error', 'Anda tidak bisa menghapus akun sendiri.');
+
+            return;
+        }
+
+        $terpakai = $u->erfRequestsAsPemohon()->exists()
+            || $u->erfRequestsAsAtasan()->exists()
+            || $u->gaRequestsAsPemohon()->exists()
+            || $u->gaRequestsAsAtasan()->exists();
+
+        if ($terpakai) {
+            session()->flash('error', "User \"{$u->name}\" sudah punya riwayat request ERF/GA (sebagai pemohon atau atasan) sehingga tidak bisa dihapus — supaya data riwayat tidak ikut hilang. Gunakan tombol \"Nonaktifkan\" saja.");
+
+            return;
+        }
+
+        if (User::where('atasan_id', $u->id)->exists()) {
+            session()->flash('error', "User \"{$u->name}\" masih menjadi atasan langsung user lain. Ganti dulu atasan mereka sebelum menghapus, atau gunakan \"Nonaktifkan\".");
+
+            return;
+        }
+
+        $u->delete();
+        session()->flash('success', "User \"{$u->name}\" berhasil dihapus.");
+    }
+
     public function resetForm(): void
     {
         $this->reset(['editingId', 'name', 'email', 'password', 'divisi', 'jabatan', 'atasan_id', 'showForm']);
         $this->jabatan_level = 'staff';
         $this->role = 'karyawan';
         $this->is_active = true;
+        $this->akses_wookey_weight = false;
+        $this->akses_so_honey = false;
         $this->resetErrorBag();
     }
 
@@ -129,22 +170,23 @@ class UserManager extends Component
 
     public function csvTemplateHeaders(): array
     {
-        return ['name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_email', 'is_active'];
+        return ['name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_email', 'is_active', 'akses_wookey_weight', 'akses_so_honey'];
     }
 
     public function csvTemplateExample(): array
     {
         return [
-            ['Contoh Leader', 'leader2@brilliantthinkcenter.com', '', 'IT', 'IT Team Leader', 'leader', 'karyawan', 'manager@brilliantthinkcenter.com', 'aktif'],
-            ['Contoh Manager', 'manager2@brilliantthinkcenter.com', 'rahasia123', 'Operasional', 'Ops Manager', 'manager', 'karyawan', '', 'aktif'],
+            ['Contoh Leader', 'leader2@brilliantthinkcenter.com', '', 'IT', 'IT Team Leader', 'leader', 'karyawan', 'manager@brilliantthinkcenter.com', 'aktif', 'ya', 'tidak'],
+            ['Contoh Manager', 'manager2@brilliantthinkcenter.com', 'rahasia123', 'Operasional', 'Ops Manager', 'manager', 'karyawan', '', 'aktif', 'tidak', 'ya'],
         ];
     }
 
     public function csvImportHint(): string
     {
         return 'Wajib: name, email. "password" boleh kosong untuk user baru -> otomatis "password". '
-            .'"jabatan_level": staff / junior_leader / leader / manager. "role": karyawan / hr / ga / admin. '
+            .'"jabatan_level": staff / junior_leader / leader / manager. "role": karyawan / hr / ga / admin (Super Admin). '
             .'"atasan_email": email atasan langsung (harus sudah terdaftar; kalau atasannya ikut di file yang sama, jalankan import 2x). '
+            .'"akses_wookey_weight" / "akses_so_honey": ya / tidak. '
             .'Email yang sudah ada akan diperbarui; password hanya berubah kalau kolomnya diisi.';
     }
 
@@ -172,7 +214,7 @@ class UserManager extends Component
             'karyawan' => 'karyawan',
             'hr' => 'hr', 'tim hr' => 'hr',
             'ga' => 'ga', 'tim ga' => 'ga', 'tim general affair' => 'ga',
-            'admin' => 'admin', 'administrator' => 'admin',
+            'admin' => 'admin', 'administrator' => 'admin', 'super admin' => 'admin',
         ], $existing->role ?? 'karyawan');
 
         $atasanId = $existing->atasan_id ?? null;
@@ -198,6 +240,8 @@ class UserManager extends Component
             'role' => $role,
             'atasan_id' => $atasanId,
             'is_active' => $this->csvBool($row['is_active'] ?? '', true),
+            'akses_wookey_weight' => $this->csvBool($row['akses_wookey_weight'] ?? '', $existing->akses_wookey_weight ?? false),
+            'akses_so_honey' => $this->csvBool($row['akses_so_honey'] ?? '', $existing->akses_so_honey ?? false),
         ];
 
         $password = (string) ($row['password'] ?? '');

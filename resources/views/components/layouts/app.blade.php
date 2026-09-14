@@ -4,25 +4,46 @@
     $pendingApprovalCount = \App\Models\ErfRequest::where('atasan_user_id', $user->id)->where('approval_status', 'menunggu')->count()
         + \App\Models\GaRequest::where('atasan_user_id', $user->id)->where('approval_status', 'menunggu')->count();
 
+    // Hak akses menu per grup (role), diatur Super Admin lewat Setting > Manajemen Grup & Akses.
+    // Super Admin selalu full akses; role lain pakai $default kalau belum pernah diatur eksplisit.
+    $menuVisible = function (string $menuKey, bool $default) use ($user) {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return \App\Models\MenuPermission::allows($user->role, $menuKey, 'view') ?? $default;
+    };
+
     $navItems = [
-        ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'show' => true],
-        ['label' => 'Approval Saya', 'route' => 'approval.index', 'icon' => 'check-badge', 'show' => true, 'badge' => $pendingApprovalCount],
-        ['label' => 'Request ERF', 'route' => 'erf.index', 'icon' => 'user-plus', 'show' => true],
-        ['label' => 'Request GA', 'route' => 'ga.index', 'icon' => 'wrench', 'show' => true],
-        ['label' => 'Request Tech', 'route' => 'placeholder.tech', 'icon' => 'code', 'show' => true],
-        ['label' => 'Creative Design', 'route' => 'placeholder.creative', 'icon' => 'palette', 'show' => true],
-        ['label' => 'Business Trip', 'route' => 'placeholder.trip', 'icon' => 'plane', 'show' => true],
+        ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'show' => $menuVisible('dashboard', true)],
+        ['label' => 'Approval Saya', 'route' => 'approval.index', 'icon' => 'check-badge', 'show' => $menuVisible('approval', true), 'badge' => $pendingApprovalCount],
+        ['label' => 'Request ERF', 'route' => 'erf.index', 'icon' => 'user-plus', 'show' => $menuVisible('erf', true)],
+        ['label' => 'Request GA', 'route' => 'ga.index', 'icon' => 'wrench', 'show' => $menuVisible('ga', true)],
+        ['label' => 'Request Tech', 'route' => 'placeholder.tech', 'icon' => 'code', 'show' => $menuVisible('tech', true)],
+        ['label' => 'Creative Design', 'route' => 'placeholder.creative', 'icon' => 'palette', 'show' => $menuVisible('creative', true)],
+        ['label' => 'Business Trip', 'route' => 'placeholder.trip', 'icon' => 'plane', 'show' => $menuVisible('business_trip', true)],
     ];
 
     $masterItems = [
-        ['label' => 'Data Karyawan', 'route' => 'master.karyawan.index', 'show' => $user->isAdmin() || $user->isHr()],
-        ['label' => 'Jabatan & TTF', 'route' => 'master.jabatan-ttf.index', 'show' => $user->isAdmin() || $user->isHr()],
-        ['label' => 'Kalender Kerja', 'route' => 'master.kalender-kerja.index', 'show' => $user->isAdmin() || $user->isHr()],
-        ['label' => 'Manajemen User', 'route' => 'master.users.index', 'show' => $user->isAdmin()],
+        ['label' => 'Data Karyawan', 'route' => 'master.karyawan.index', 'show' => ($user->isAdmin() || $user->isHr()) && $menuVisible('master_karyawan', true)],
+        ['label' => 'Jabatan & TTF', 'route' => 'master.jabatan-ttf.index', 'show' => ($user->isAdmin() || $user->isHr()) && $menuVisible('master_jabatan_ttf', true)],
+        ['label' => 'Kalender Kerja', 'route' => 'master.kalender-kerja.index', 'show' => ($user->isAdmin() || $user->isHr()) && $menuVisible('master_kalender', true)],
+        ['label' => 'Divisi', 'route' => 'master.divisi.index', 'show' => ($user->isAdmin() || $user->isHr()) && $menuVisible('master_divisi', true)],
+        ['label' => 'Jabatan', 'route' => 'master.jabatan.index', 'show' => ($user->isAdmin() || $user->isHr()) && $menuVisible('master_jabatan', true)],
     ];
     $showMasterGroup = collect($masterItems)->contains(fn ($i) => $i['show']);
+    $masterActive = collect($masterItems)->contains(fn ($i) => $i['show'] && request()->routeIs($i['route'].'*'));
+
+    $settingItems = [
+        ['label' => 'Manajemen User', 'route' => 'setting.users.index', 'show' => $user->isAdmin()],
+        ['label' => 'Manajemen Grup & Akses', 'route' => 'setting.grup-akses.index', 'show' => $user->isAdmin()],
+    ];
+    $showSettingGroup = collect($settingItems)->contains(fn ($i) => $i['show']);
+    $settingActive = collect($settingItems)->contains(fn ($i) => $i['show'] && request()->routeIs($i['route'].'*'));
 
     $icons = [
+        'settings' => 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28zM15 12a3 3 0 11-6 0 3 3 0 016 0z',
+        'chevron-right' => 'M8.25 4.5l7.5 7.5-7.5 7.5',
         'home' => 'M2.25 12l8.954-8.955a1.125 1.125 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75',
         'user-plus' => 'M19 8v6m3-3h-6M12 6a3 3 0 11-6 0 3 3 0 016 0zM4.5 20.25a7.5 7.5 0 0113 0',
         'wrench' => 'M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085',
@@ -76,18 +97,53 @@
                 @endforeach
 
                 @if ($showMasterGroup)
-                    <p class="mt-5 mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Master Data</p>
-                    @foreach ($masterItems as $item)
-                        @continue(!$item['show'])
-                        @php $active = request()->routeIs($item['route'].'*'); @endphp
-                        <a href="{{ route($item['route']) }}"
-                            class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ $active ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                    <div class="mt-3" x-data="{ open: {{ $masterActive ? 'true' : 'false' }} }">
+                        <button type="button" @click="open = !open"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons['box'] }}" />
                             </svg>
-                            {{ $item['label'] }}
-                        </a>
-                    @endforeach
+                            <span class="flex-1 text-left">Master Data</span>
+                            <svg class="h-4 w-4 shrink-0 transition-transform" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons['chevron-right'] }}" />
+                            </svg>
+                        </button>
+                        <div x-show="open" x-transition x-cloak class="mt-1 space-y-1 pl-8">
+                            @foreach ($masterItems as $item)
+                                @continue(!$item['show'])
+                                @php $itemActive = request()->routeIs($item['route'].'*'); @endphp
+                                <a href="{{ route($item['route']) }}"
+                                    class="block rounded-lg px-3 py-2 text-sm transition {{ $itemActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                                    {{ $item['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if ($showSettingGroup)
+                    <div class="mt-1" x-data="{ open: {{ $settingActive ? 'true' : 'false' }} }">
+                        <button type="button" @click="open = !open"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white">
+                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons['settings'] }}" />
+                            </svg>
+                            <span class="flex-1 text-left">Setting</span>
+                            <svg class="h-4 w-4 shrink-0 transition-transform" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons['chevron-right'] }}" />
+                            </svg>
+                        </button>
+                        <div x-show="open" x-transition x-cloak class="mt-1 space-y-1 pl-8">
+                            @foreach ($settingItems as $item)
+                                @continue(!$item['show'])
+                                @php $itemActive = request()->routeIs($item['route'].'*'); @endphp
+                                <a href="{{ route($item['route']) }}"
+                                    class="block rounded-lg px-3 py-2 text-sm transition {{ $itemActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                                    {{ $item['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
             </nav>
 

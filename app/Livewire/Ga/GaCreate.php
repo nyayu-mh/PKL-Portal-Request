@@ -44,7 +44,7 @@ class GaCreate extends Component
 
         if ($gaRequest && $gaRequest->exists) {
             abort_unless($gaRequest->user_id === $user->id, 403);
-            abort_unless($gaRequest->approval_status === 'ditolak', 403, 'Request GA ini tidak sedang dalam status perlu revisi.');
+            abort_unless($gaRequest->approval_status === 'revisi', 403, 'Request GA ini tidak sedang dalam status perlu revisi.');
 
             $this->gaRequest = $gaRequest;
             $this->jenis_request = $gaRequest->jenis_request;

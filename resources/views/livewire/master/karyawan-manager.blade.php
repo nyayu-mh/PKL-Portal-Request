@@ -20,38 +20,36 @@
 
     @include('livewire.master.partials.csv-import')
 
-    @if ($showForm)
-        <x-card :title="$editingId ? 'Edit Karyawan' : 'Tambah Karyawan'" class="mb-6">
-            <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Nama</label>
-                    <input type="text" wire:model="nama" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    @error('nama') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
-                    <input type="email" wire:model="email" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    @error('email') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Divisi</label>
-                    <input type="text" wire:model="divisi" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Jabatan</label>
-                    <input type="text" wire:model="jabatan" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input type="checkbox" wire:model="status_aktif" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                    Karyawan Aktif
-                </label>
-                <div class="sm:col-span-2 flex justify-end gap-3">
-                    <button type="button" wire:click="resetForm" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Batal</button>
-                    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan</button>
-                </div>
-            </form>
-        </x-card>
-    @endif
+    <x-modal :show="$showForm" :title="$editingId ? 'Edit Karyawan' : 'Tambah Karyawan'">
+        <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Nama</label>
+                <input type="text" wire:model="nama" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('nama') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
+                <input type="email" wire:model="email" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                @error('email') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Divisi</label>
+                <input type="text" wire:model="divisi" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-medium text-slate-700">Jabatan</label>
+                <input type="text" wire:model="jabatan" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" wire:model="status_aktif" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                Karyawan Aktif
+            </label>
+            <div class="sm:col-span-2 flex justify-end gap-3 border-t border-slate-100 pt-4">
+                <button type="button" wire:click="resetForm" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Batal</button>
+                <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan</button>
+            </div>
+        </form>
+    </x-modal>
 
     <x-card>
         <input type="text" wire:model.live.debounce.400ms="search" placeholder="Cari nama karyawan..." class="mb-4 w-full max-w-xs rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">

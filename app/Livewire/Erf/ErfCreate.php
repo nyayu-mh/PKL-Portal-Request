@@ -45,7 +45,7 @@ class ErfCreate extends Component
 
         if ($erfRequest && $erfRequest->exists) {
             abort_unless($erfRequest->user_id === $user->id, 403);
-            abort_unless($erfRequest->approval_status === 'ditolak', 403, 'ERF ini tidak sedang dalam status perlu revisi.');
+            abort_unless($erfRequest->approval_status === 'revisi', 403, 'ERF ini tidak sedang dalam status perlu revisi.');
 
             $this->erfRequest = $erfRequest;
             $this->jenis_erf = $erfRequest->jenis_erf;
