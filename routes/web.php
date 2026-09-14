@@ -4,10 +4,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlaceholderController;
 use App\Livewire\Approval\ApprovalIndex;
-use App\Livewire\Erf\ErfCreate;
 use App\Livewire\Erf\ErfIndex;
 use App\Livewire\Erf\ErfShow;
-use App\Livewire\Ga\GaCreate;
 use App\Livewire\Ga\GaIndex;
 use App\Livewire\Ga\GaShow;
 use App\Livewire\Master\JabatanTtfManager;
@@ -36,19 +34,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/creative-design', fn () => (new PlaceholderController)->show('Request Creative Design', 'Modul request Creative Design akan menyusul. Untuk saat ini silakan gunakan alur ClickUp yang sudah berjalan.'))->name('placeholder.creative');
     Route::get('/business-trip', fn () => (new PlaceholderController)->show('Business Trip', 'Modul Business Trip masih dalam tahap perencanaan bersama tim terkait.'))->name('placeholder.trip');
 
-    // ERF
+    // ERF — form Buat/Ajukan Ulang tampil sebagai pop-up di halaman index (lihat ErfIndex).
     Route::prefix('erf')->name('erf.')->group(function () {
         Route::get('/', ErfIndex::class)->name('index');
-        Route::get('/create', ErfCreate::class)->name('create');
-        Route::get('/{erfRequest}/edit', ErfCreate::class)->name('edit');
         Route::get('/{erfRequest}', ErfShow::class)->name('show');
     });
 
-    // GA
+    // GA — form Buat/Ajukan Ulang tampil sebagai pop-up di halaman index (lihat GaIndex).
     Route::prefix('ga')->name('ga.')->group(function () {
         Route::get('/', GaIndex::class)->name('index');
-        Route::get('/create', GaCreate::class)->name('create');
-        Route::get('/{gaRequest}/edit', GaCreate::class)->name('edit');
         Route::get('/{gaRequest}', GaShow::class)->name('show');
     });
 

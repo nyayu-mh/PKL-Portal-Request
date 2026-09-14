@@ -1,13 +1,16 @@
-@props(['show' => false, 'title' => null, 'maxWidth' => 'xl', 'closeMethod' => 'resetForm'])
+@props(['show' => false, 'title' => null, 'maxWidth' => 'lg', 'closeMethod' => 'resetForm'])
 
 @php
+    // Sengaja TANPA prefix responsive (bukan "sm:max-w-...") supaya lebar pop-up selalu
+    // terbatas di ukuran layar berapa pun — tidak melebar penuh kiri-kanan.
     $maxWidthClass = match ($maxWidth) {
-        'sm' => 'sm:max-w-sm',
-        'md' => 'sm:max-w-md',
-        'lg' => 'sm:max-w-lg',
-        'xl' => 'sm:max-w-xl',
-        '2xl' => 'sm:max-w-2xl',
-        default => 'sm:max-w-xl',
+        'xs' => 'max-w-xs',
+        'sm' => 'max-w-sm',
+        'md' => 'max-w-md',
+        'lg' => 'max-w-lg',
+        'xl' => 'max-w-xl',
+        '2xl' => 'max-w-2xl',
+        default => 'max-w-md',
     };
 @endphp
 
@@ -15,7 +18,7 @@
     <div
         x-data
         @keydown.escape.window="$wire.{{ $closeMethod }}()"
-        class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 px-4 py-8 sm:items-center"
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 px-4 py-8"
     >
         <div @click.outside="$wire.{{ $closeMethod }}()" class="w-full {{ $maxWidthClass }} rounded-2xl bg-white shadow-xl">
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">

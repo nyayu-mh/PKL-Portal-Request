@@ -138,7 +138,7 @@
                     @if ($isOwner && in_array($gaRequest->approval_status, ['menunggu', 'revisi']))
                         <div class="flex gap-3 {{ $isApprover ? 'mt-4 border-t border-slate-100 pt-4' : '' }}">
                             @if ($gaRequest->approval_status === 'revisi')
-                                <a href="{{ route('ga.edit', $gaRequest) }}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Edit &amp; Ajukan Ulang</a>
+                                <a href="{{ route('ga.index', ['edit' => $gaRequest->id]) }}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Edit &amp; Ajukan Ulang</a>
                             @endif
                             <button type="button" wire:click="cancel" wire:confirm="Yakin ingin menghapus request ini?" class="rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50">Hapus Request</button>
                         </div>
