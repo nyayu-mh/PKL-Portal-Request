@@ -10,7 +10,7 @@ Beberapa langkah di bawah **wajib dilakukan sendiri** (bikin akun, klik-klik di 
 
 ## 0. Syarat: Kode harus sudah ada di GitHub
 
-Render deploy langsung dari repo GitHub. Kalau `git push` Anda ke `https://github.com/paturdiwantoro7-gif/portal-request.git` belum berhasil, selesaikan dulu itu (jalankan `git push -u origin main` dari terminal Anda sendiri, login kalau diminta). Baru lanjut ke langkah berikutnya.
+✅ Sudah beres — kode project ini sudah ter-push ke `https://github.com/nyayu-mh/PKL-Portal-Request`. Render nanti connect ke repo ini.
 
 ---
 
@@ -29,8 +29,8 @@ Render deploy langsung dari repo GitHub. Kalau `git push` Anda ke `https://githu
 
 ## 2. Buat Akun Render & Hubungkan GitHub
 
-1. Buka https://render.com → **Get Started** → daftar pakai akun **GitHub** Anda (`paturdiwantoro7-gif`) supaya otomatis terhubung.
-2. Kalau diminta izin akses repo, pilih repo `portal-request` (atau izinkan akses ke semua repo).
+1. Buka https://render.com → **Get Started** → daftar/login pakai akun **GitHub yang punya akses ke repo `nyayu-mh/PKL-Portal-Request`** (supaya otomatis terhubung).
+2. Kalau diminta izin akses repo, pilih repo `PKL-Portal-Request` (atau izinkan akses ke semua repo).
 
 ---
 
@@ -39,7 +39,7 @@ Render deploy langsung dari repo GitHub. Kalau `git push` Anda ke `https://githu
 Cara termudah — pakai file `render.yaml` yang sudah saya siapkan (Render menyebutnya "Blueprint"):
 
 1. Di dashboard Render, klik **New +** → **Blueprint**.
-2. Pilih repo `portal-request`. Render akan otomatis membaca `render.yaml` dan menyiapkan 1 service bernama `portal-request-btc` dengan sebagian besar pengaturan sudah terisi.
+2. Pilih repo `PKL-Portal-Request`. Render akan otomatis membaca `render.yaml` dan menyiapkan 1 service bernama `portal-request-btc` dengan sebagian besar pengaturan sudah terisi.
 3. Render akan minta Anda mengisi beberapa nilai yang sengaja saya kosongkan (karena rahasia/khusus akun Anda) — isi seperti ini:
 
    | Env Var | Isi dengan |
