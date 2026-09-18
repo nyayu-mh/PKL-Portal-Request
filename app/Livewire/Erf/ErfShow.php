@@ -148,7 +148,7 @@ class ErfShow extends Component
         $this->redirect(route('erf.index'), navigate: false);
     }
 
-    public function updateStatus(): void
+    public function updateStatus()
     {
         abort_unless($this->canManage(), 403);
         abort_unless($this->erfRequest->isApprovedForProcessing(), 403, 'ERF ini belum disetujui atasan.');
@@ -173,10 +173,9 @@ class ErfShow extends Component
             'catatan' => $this->catatan_update ?: null,
         ]);
 
-        $this->catatan_update = '';
-        $this->erfRequest->refresh();
+        session()->flash('success', 'Data ERF berhasil diperbarui.');
 
-        session()->flash('success', 'Status ERF berhasil diperbarui.');
+        return $this->redirect(route('erf.index'), navigate: false);
     }
 
     public function render()

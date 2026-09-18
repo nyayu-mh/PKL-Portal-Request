@@ -223,7 +223,7 @@ class GaShow extends Component
         $quotation->delete();
     }
 
-    public function updateStatus(): void
+    public function updateStatus()
     {
         abort_unless($this->canManage(), 403);
         abort_unless($this->gaRequest->isApprovedForProcessing(), 403, 'Request GA ini belum disetujui atasan.');
@@ -257,10 +257,9 @@ class GaShow extends Component
             'catatan' => $this->catatan_update ?: null,
         ]);
 
-        $this->catatan_update = '';
-        $this->gaRequest->refresh();
+        session()->flash('success', 'Data request GA berhasil diperbarui.');
 
-        session()->flash('success', 'Proses request GA berhasil diperbarui.');
+        return $this->redirect(route('ga.index'), navigate: false);
     }
 
     public function render()

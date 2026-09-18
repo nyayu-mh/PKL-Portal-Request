@@ -224,6 +224,11 @@ class ErfIndex extends Component
                 $q->where('user_id', $user->id)
                     ->orWhere('atasan_user_id', $user->id);
             });
+        } elseif ($user->isHr() && ! $user->isAdmin()) {
+            // Tim HR cuma memproses ERF yang approval atasannya sudah beres (disetujui atau
+            // memang tidak perlu approval) — yang masih menunggu/revisi/ditolak disembunyikan
+            // dari menu ini supaya tidak membingungkan (belum bisa diproses HR).
+            $query->whereIn('approval_status', ['disetujui', 'tidak_perlu']);
         }
 
         if ($this->search !== '') {

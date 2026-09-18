@@ -215,6 +215,11 @@ class GaIndex extends Component
                 $q->where('user_id', $user->id)
                     ->orWhere('atasan_user_id', $user->id);
             });
+        } elseif ($user->isGa() && ! $user->isAdmin()) {
+            // Tim GA cuma memproses request yang approval atasannya sudah beres (disetujui atau
+            // memang tidak perlu approval) — yang masih menunggu/revisi/ditolak disembunyikan
+            // dari menu ini supaya tidak membingungkan (belum bisa diproses GA).
+            $query->whereIn('approval_status', ['disetujui', 'tidak_perlu']);
         }
 
         if ($this->search !== '') {

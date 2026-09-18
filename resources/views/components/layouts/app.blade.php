@@ -63,6 +63,7 @@
     <title>{{ $title ?? 'Dashboard' }} — {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="h-full bg-slate-50 antialiased" x-data="{ sidebarOpen: false }">
     <div class="flex min-h-screen">
@@ -190,6 +191,21 @@
             </main>
         </div>
     </div>
+
+    @if (session('success') || session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: @json(session('success') ? 'success' : 'error'),
+                    title: @json(session('success') ? 'Berhasil' : 'Gagal'),
+                    text: @json(session('success') ?: session('error')),
+                    confirmButtonColor: '#6366f1',
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            });
+        </script>
+    @endif
 
     @livewireScripts
 </body>
