@@ -17,7 +17,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_id', 'is_active',
-        'akses_wookey_weight', 'akses_so_honey',
+        'brand',
     ];
 
     protected $hidden = [
@@ -35,8 +35,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
-            'akses_wookey_weight' => 'boolean',
-            'akses_so_honey' => 'boolean',
         ];
     }
 
@@ -65,6 +63,20 @@ class User extends Authenticatable
             'ga' => 'Tim General Affair',
             'admin' => 'Super Admin',
         ];
+    }
+
+    public static function brandLabels(): array
+    {
+        return [
+            'wookey_wight' => 'Wookey Wight',
+            'so_honey_jr' => 'So Honey Jr',
+            'semua' => 'Semua Brand',
+        ];
+    }
+
+    public function brandLabel(): string
+    {
+        return self::brandLabels()[$this->brand] ?? '-';
     }
 
     public function jabatanLevelLabel(): string

@@ -38,9 +38,7 @@ class UserManager extends Component
 
     public bool $is_active = true;
 
-    public bool $akses_wookey_weight = false;
-
-    public bool $akses_so_honey = false;
+    public string $brand = '';
 
     public bool $showForm = false;
 
@@ -61,8 +59,7 @@ class UserManager extends Component
             'role' => ['required', 'in:karyawan,hr,ga,admin'],
             'atasan_id' => ['nullable', 'exists:users,id', 'different:editingId'],
             'is_active' => ['boolean'],
-            'akses_wookey_weight' => ['boolean'],
-            'akses_so_honey' => ['boolean'],
+            'brand' => ['nullable', 'in:,wookey_wight,so_honey_jr,semua'],
         ];
     }
 
@@ -85,8 +82,7 @@ class UserManager extends Component
         $this->role = $u->role;
         $this->atasan_id = $u->atasan_id;
         $this->is_active = $u->is_active;
-        $this->akses_wookey_weight = $u->akses_wookey_weight;
-        $this->akses_so_honey = $u->akses_so_honey;
+        $this->brand = (string) $u->brand;
         $this->showForm = true;
     }
 
@@ -156,8 +152,7 @@ class UserManager extends Component
         $this->jabatan_level = 'staff';
         $this->role = 'karyawan';
         $this->is_active = true;
-        $this->akses_wookey_weight = false;
-        $this->akses_so_honey = false;
+        $this->brand = '';
         $this->resetErrorBag();
     }
 
@@ -170,14 +165,14 @@ class UserManager extends Component
 
     public function csvTemplateHeaders(): array
     {
-        return ['name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_email', 'is_active', 'akses_wookey_weight', 'akses_so_honey'];
+        return ['name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_email', 'is_active', 'brand'];
     }
 
     public function csvTemplateExample(): array
     {
         return [
-            ['Contoh Leader', 'leader2@brilliantthinkcenter.com', '', 'IT', 'IT Team Leader', 'leader', 'karyawan', 'manager@brilliantthinkcenter.com', 'aktif', 'ya', 'tidak'],
-            ['Contoh Manager', 'manager2@brilliantthinkcenter.com', 'rahasia123', 'Operasional', 'Ops Manager', 'manager', 'karyawan', '', 'aktif', 'tidak', 'ya'],
+            ['Contoh Leader', 'leader2@brilliantthinkcenter.com', '', 'IT', 'IT Team Leader', 'leader', 'karyawan', 'manager@brilliantthinkcenter.com', 'aktif', 'wookey_wight'],
+            ['Contoh Manager', 'manager2@brilliantthinkcenter.com', 'rahasia123', 'Operasional', 'Ops Manager', 'manager', 'karyawan', '', 'aktif', 'semua'],
         ];
     }
 
@@ -186,7 +181,7 @@ class UserManager extends Component
         return 'Wajib: name, email. "password" boleh kosong untuk user baru -> otomatis "password". '
             .'"jabatan_level": staff / junior_leader / leader / manager. "role": karyawan / hr / ga / admin (Super Admin). '
             .'"atasan_email": email atasan langsung (harus sudah terdaftar; kalau atasannya ikut di file yang sama, jalankan import 2x). '
-            .'"akses_wookey_weight" / "akses_so_honey": ya / tidak. '
+            .'"brand": wookey_wight / so_honey_jr / semua (boleh kosong kalau belum ditentukan). '
             .'Email yang sudah ada akan diperbarui; password hanya berubah kalau kolomnya diisi.';
     }
 
@@ -240,8 +235,11 @@ class UserManager extends Component
             'role' => $role,
             'atasan_id' => $atasanId,
             'is_active' => $this->csvBool($row['is_active'] ?? '', true),
-            'akses_wookey_weight' => $this->csvBool($row['akses_wookey_weight'] ?? '', $existing->akses_wookey_weight ?? false),
-            'akses_so_honey' => $this->csvBool($row['akses_so_honey'] ?? '', $existing->akses_so_honey ?? false),
+            'brand' => $this->csvChoice($row['brand'] ?? '', [
+                'wookey_wight' => 'wookey_wight', 'wookey wight' => 'wookey_wight',
+                'so_honey_jr' => 'so_honey_jr', 'so honey jr' => 'so_honey_jr',
+                'semua' => 'semua', 'semua brand' => 'semua',
+            ], $existing->brand ?? ''),
         ];
 
         $password = (string) ($row['password'] ?? '');
@@ -286,6 +284,7 @@ class UserManager extends Component
                 ->orderBy('name')->paginate(10),
             'jabatanLevelOptions' => User::jabatanLevelLabels(),
             'roleOptions' => User::roleLabels(),
+            'brandOptions' => User::brandLabels(),
             'atasanOptions' => User::where('is_active', true)
                 ->when($this->editingId, fn ($q) => $q->where('id', '!=', $this->editingId))
                 ->orderBy('name')->get(),

@@ -80,17 +80,15 @@
                     <p class="mt-1 text-xs text-slate-400">Wajib diisi untuk user dengan level Junior Leader / Leader agar bisa mengajukan ERF/GA (perlu approval atasan sebelum diproses HR/GA).</p>
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Akses Brand</label>
-                    <div class="flex flex-wrap gap-4">
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input type="checkbox" wire:model="akses_wookey_weight" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                            Wookey Weight
-                        </label>
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input type="checkbox" wire:model="akses_so_honey" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                            So Honey
-                        </label>
-                    </div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">Brand</label>
+                    <select wire:model="brand" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">— Belum ditentukan —</option>
+                        @foreach ($brandOptions as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-slate-400">Supaya Admin tahu brand apa yang mengajukan saat user ini bikin request.</p>
+                    @error('brand') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-700">
                     <input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
@@ -131,11 +129,8 @@
                             <td class="px-5 py-3 text-slate-600">{{ $item->roleLabel() }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $item->atasan->name ?? '-' }}</td>
                             <td class="px-5 py-3 text-slate-600">
-                                @if ($item->akses_wookey_weight || $item->akses_so_honey)
-                                    <div class="flex flex-wrap gap-1">
-                                        @if ($item->akses_wookey_weight)<x-status-badge color="indigo" label="Wookey Weight" />@endif
-                                        @if ($item->akses_so_honey)<x-status-badge color="orange" label="So Honey" />@endif
-                                    </div>
+                                @if ($item->brand)
+                                    <x-status-badge :color="$item->brand === 'semua' ? 'emerald' : ($item->brand === 'wookey_wight' ? 'indigo' : 'orange')" :label="$item->brandLabel()" />
                                 @else
                                     <span class="text-slate-400">-</span>
                                 @endif

@@ -8,6 +8,8 @@ use App\Livewire\Erf\ErfIndex;
 use App\Livewire\Erf\ErfShow;
 use App\Livewire\Ga\GaIndex;
 use App\Livewire\Ga\GaShow;
+use App\Livewire\Master\DivisiManager;
+use App\Livewire\Master\JabatanManager;
 use App\Livewire\Master\JabatanTtfManager;
 use App\Livewire\Master\KalenderKerjaManager;
 use App\Livewire\Master\KaryawanManager;
@@ -51,9 +53,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/karyawan', KaryawanManager::class)->name('karyawan.index');
         Route::get('/jabatan-ttf', JabatanTtfManager::class)->name('jabatan-ttf.index');
         Route::get('/kalender-kerja', KalenderKerjaManager::class)->name('kalender-kerja.index');
-        // Konten menyusul — dibuat placeholder dulu supaya menu & submenu sudah tersedia.
-        Route::get('/divisi', fn () => (new PlaceholderController)->show('Master Data — Divisi', 'Data Divisi akan dilengkapi menyusul.'))->name('divisi.index');
-        Route::get('/jabatan', fn () => (new PlaceholderController)->show('Master Data — Jabatan', 'Data Jabatan akan dilengkapi menyusul.'))->name('jabatan.index');
+        Route::get('/divisi', DivisiManager::class)->name('divisi.index');
+        Route::get('/jabatan', JabatanManager::class)->name('jabatan.index');
     });
 
     // Setting (khusus Super Admin)
