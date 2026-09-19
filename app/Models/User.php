@@ -17,7 +17,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'divisi', 'jabatan', 'jabatan_level', 'role', 'atasan_id', 'is_active',
-        'brand',
+        'brand', 'lihat_semua_request',
     ];
 
     protected $hidden = [
@@ -35,6 +35,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'lihat_semua_request' => 'boolean',
         ];
     }
 
@@ -112,7 +113,7 @@ class User extends Authenticatable
      */
     public function canAccessErf(): bool
     {
-        return ! $this->isGa();
+        return $this->canViewAllRequests() || ! $this->isGa();
     }
 
     /**
@@ -120,7 +121,16 @@ class User extends Authenticatable
      */
     public function canAccessGa(): bool
     {
-        return ! $this->isHr();
+        return $this->canViewAllRequests() || ! $this->isHr();
+    }
+
+    /**
+     * Boleh melihat SEMUA request ERF & GA: Super Admin, atau user yang diberi centang
+     * "Bisa melihat semua request" (mis. Manager HRBP, karena semua request bermuara ke divisi HRBP).
+     */
+    public function canViewAllRequests(): bool
+    {
+        return $this->isAdmin() || (bool) $this->lihat_semua_request;
     }
 
     /**

@@ -236,4 +236,23 @@ class RequestVisibilityTest extends TestCase
         $this->actingAs($this->admin)->get(route('dashboard'))
             ->assertOk()->assertSee(route('erf.index'))->assertSee(route('ga.index'));
     }
+
+    public function test_user_dengan_centang_lihat_semua_request_melihat_erf_dan_ga_semuanya(): void
+    {
+        // Mis. Manager HRBP: role hr, tapi berhak memantau semua request.
+        $hrbp = $this->makeUser('Manager HRBP', 'manager', ['role' => 'hr', 'lihat_semua_request' => true]);
+        $erf = $this->makeErf('menunggu');
+        $ga = $this->makeGa('menunggu');
+
+        $this->assertContains($erf->id, $this->visibleErfIds($hrbp));
+        $this->assertContains($ga->id, $this->visibleGaIds($hrbp));
+
+        $this->actingAs($hrbp)->get(route('erf.show', $erf))->assertOk();
+        $this->actingAs($hrbp)->get(route('ga.show', $ga))->assertOk();
+        $this->actingAs($hrbp)->get(route('ga.index'))->assertOk();
+        $this->actingAs($hrbp)->get(route('dashboard'))->assertOk()->assertSee(route('ga.index'));
+
+        // Tim HR biasa (tanpa centang) tetap tidak bisa masuk modul GA.
+        $this->actingAs($this->hr)->get(route('ga.show', $ga))->assertForbidden();
+    }
 }

@@ -38,6 +38,8 @@ class UserManager extends Component
 
     public bool $is_active = true;
 
+    public bool $lihat_semua_request = false;
+
     public string $brand = '';
 
     public bool $showForm = false;
@@ -59,6 +61,7 @@ class UserManager extends Component
             'role' => ['required', 'in:karyawan,hr,ga,admin'],
             'atasan_id' => ['nullable', 'exists:users,id', 'different:editingId'],
             'is_active' => ['boolean'],
+            'lihat_semua_request' => ['boolean'],
             'brand' => ['nullable', 'in:,wookey_wight,so_honey_jr,semua'],
         ];
     }
@@ -82,6 +85,7 @@ class UserManager extends Component
         $this->role = $u->role;
         $this->atasan_id = $u->atasan_id;
         $this->is_active = $u->is_active;
+        $this->lihat_semua_request = $u->lihat_semua_request;
         $this->brand = (string) $u->brand;
         $this->showForm = true;
     }
@@ -148,7 +152,7 @@ class UserManager extends Component
 
     public function resetForm(): void
     {
-        $this->reset(['editingId', 'name', 'email', 'password', 'divisi', 'jabatan', 'atasan_id', 'showForm']);
+        $this->reset(['editingId', 'name', 'email', 'password', 'divisi', 'jabatan', 'atasan_id', 'lihat_semua_request', 'showForm']);
         $this->jabatan_level = 'staff';
         $this->role = 'karyawan';
         $this->is_active = true;

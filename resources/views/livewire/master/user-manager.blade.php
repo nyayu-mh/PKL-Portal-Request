@@ -94,6 +94,12 @@
                     <input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                     Akun Aktif (bisa login)
                 </label>
+                <label class="flex items-start gap-2 text-sm text-slate-700">
+                    <input type="checkbox" wire:model="lihat_semua_request" class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <span>Bisa melihat semua request ERF &amp; GA
+                        <span class="block text-xs text-slate-400">Untuk pejabat yang memantau seluruh request (mis. Manager HRBP). Super Admin sudah otomatis.</span>
+                    </span>
+                </label>
                 <div class="sm:col-span-2 flex justify-end gap-3 border-t border-slate-100 pt-4">
                     <button type="button" wire:click="resetForm" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Batal</button>
                     <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan</button>
