@@ -125,8 +125,9 @@ class User extends Authenticatable
     }
 
     /**
-     * Boleh melihat SEMUA request ERF & GA: Super Admin, atau user yang diberi centang
+     * Boleh masuk ke modul ERF & GA sekaligus: Super Admin, atau user yang diberi centang
      * "Bisa melihat semua request" (mis. Manager HRBP, karena semua request bermuara ke divisi HRBP).
+     * Yang tampil tetap dibatasi scopeVisibleTo(): non-admin hanya melihat request yang sudah disetujui atasan.
      */
     public function canViewAllRequests(): bool
     {

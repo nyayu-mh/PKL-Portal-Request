@@ -237,22 +237,26 @@ class RequestVisibilityTest extends TestCase
             ->assertOk()->assertSee(route('erf.index'))->assertSee(route('ga.index'));
     }
 
-    public function test_user_dengan_centang_lihat_semua_request_melihat_erf_dan_ga_semuanya(): void
+    public function test_user_dengan_centang_lihat_semua_request_melihat_erf_dan_ga_yang_sudah_disetujui(): void
     {
-        // Mis. Manager HRBP: role hr, tapi berhak memantau semua request.
+        // Mis. Manager HRBP: role hr, tapi memantau semua request dari kedua modul.
         $hrbp = $this->makeUser('Manager HRBP', 'manager', ['role' => 'hr', 'lihat_semua_request' => true]);
-        $erf = $this->makeErf('menunggu');
-        $ga = $this->makeGa('menunggu');
+        $erfOk = $this->makeErf('disetujui');
+        $erfMenunggu = $this->makeErf('menunggu');
+        $gaOk = $this->makeGa('disetujui');
+        $gaMenunggu = $this->makeGa('menunggu');
 
-        $this->assertContains($erf->id, $this->visibleErfIds($hrbp));
-        $this->assertContains($ga->id, $this->visibleGaIds($hrbp));
+        $this->assertSame([$erfOk->id], $this->visibleErfIds($hrbp));
+        $this->assertSame([$gaOk->id], $this->visibleGaIds($hrbp));
 
-        $this->actingAs($hrbp)->get(route('erf.show', $erf))->assertOk();
-        $this->actingAs($hrbp)->get(route('ga.show', $ga))->assertOk();
+        $this->actingAs($hrbp)->get(route('erf.show', $erfOk))->assertOk();
+        $this->actingAs($hrbp)->get(route('ga.show', $gaOk))->assertOk();
+        $this->actingAs($hrbp)->get(route('erf.show', $erfMenunggu))->assertForbidden();
+        $this->actingAs($hrbp)->get(route('ga.show', $gaMenunggu))->assertForbidden();
         $this->actingAs($hrbp)->get(route('ga.index'))->assertOk();
         $this->actingAs($hrbp)->get(route('dashboard'))->assertOk()->assertSee(route('ga.index'));
 
         // Tim HR biasa (tanpa centang) tetap tidak bisa masuk modul GA.
-        $this->actingAs($this->hr)->get(route('ga.show', $ga))->assertForbidden();
+        $this->actingAs($this->hr)->get(route('ga.show', $gaOk))->assertForbidden();
     }
 }

@@ -97,7 +97,7 @@
                 <label class="flex items-start gap-2 text-sm text-slate-700">
                     <input type="checkbox" wire:model="lihat_semua_request" class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                     <span>Bisa melihat semua request ERF &amp; GA
-                        <span class="block text-xs text-slate-400">Untuk pejabat yang memantau seluruh request (mis. Manager HRBP). Super Admin sudah otomatis.</span>
+                        <span class="block text-xs text-slate-400">Untuk pejabat yang memantau seluruh request (mis. Manager HRBP): melihat semua request yang sudah disetujui atasan, di modul ERF dan GA. Super Admin sudah otomatis melihat semuanya.</span>
                     </span>
                 </label>
                 <div class="sm:col-span-2 flex justify-end gap-3 border-t border-slate-100 pt-4">

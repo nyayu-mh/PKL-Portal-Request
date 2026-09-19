@@ -17,11 +17,12 @@ class GaRequest extends Model
      *  - yang ia buat sendiri, atau
      *  - yang atasan langsungnya adalah dia (untuk approval), atau
      *  - kalau ia Tim GA: semua request yang approval atasannya sudah beres (disetujui / tidak perlu approval).
-     * Super Admin dan user bercentang "lihat semua request" (mis. Manager HRBP) bisa melihat semuanya. Tim HR sama sekali tidak punya akses ke modul GA.
+     * Super Admin bisa melihat semuanya. User bercentang "lihat semua request" (mis. Manager HRBP) juga
+     * melihat semua request yang approval atasannya sudah beres, sama seperti Tim GA. Tim HR sama sekali tidak punya akses ke modul GA.
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        if ($user->canViewAllRequests()) {
+        if ($user->isAdmin()) {
             return $query;
         }
 
@@ -33,7 +34,7 @@ class GaRequest extends Model
             $q->where('user_id', $user->id)
                 ->orWhere('atasan_user_id', $user->id);
 
-            if ($user->isGa()) {
+            if ($user->isGa() || $user->lihat_semua_request) {
                 $q->orWhereIn('approval_status', ['disetujui', 'tidak_perlu']);
             }
         });
@@ -41,14 +42,14 @@ class GaRequest extends Model
 
     public function isVisibleTo(User $user): bool
     {
-        if ($user->canViewAllRequests()) {
+        if ($user->isAdmin()) {
             return true;
         }
 
         return $user->canAccessGa()
             && ($this->user_id === $user->id
                 || $this->atasan_user_id === $user->id
-                || ($user->isGa() && $this->isApprovedForProcessing()));
+                || (($user->isGa() || $user->lihat_semua_request) && $this->isApprovedForProcessing()));
     }
 
     protected $fillable = [
