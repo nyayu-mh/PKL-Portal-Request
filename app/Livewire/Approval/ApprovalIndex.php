@@ -14,8 +14,10 @@ class ApprovalIndex extends Component
     public function render()
     {
         $userId = Auth::id();
+        $user = Auth::user();
 
         $erfs = ErfRequest::query()
+            ->visibleTo($user)
             ->with('pemohon', 'jabatanDibutuhkan')
             ->where('atasan_user_id', $userId)
             ->where('approval_status', 'menunggu')
@@ -23,6 +25,7 @@ class ApprovalIndex extends Component
             ->get();
 
         $gas = GaRequest::query()
+            ->visibleTo($user)
             ->with('pemohon')
             ->where('atasan_user_id', $userId)
             ->where('approval_status', 'menunggu')

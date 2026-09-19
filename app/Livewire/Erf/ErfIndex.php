@@ -52,6 +52,8 @@ class ErfIndex extends Component
 
     public function mount(): void
     {
+        abort_unless(Auth::user()->isAdmin() || Auth::user()->canAccessErf(), 403);
+
         // Datang dari tombol "Edit & Ajukan Ulang" di halaman detail ERF.
         if ($id = request()->integer('edit')) {
             $this->edit($id);

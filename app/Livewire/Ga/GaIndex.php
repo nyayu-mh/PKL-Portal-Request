@@ -54,6 +54,8 @@ class GaIndex extends Component
 
     public function mount(): void
     {
+        abort_unless(Auth::user()->isAdmin() || Auth::user()->canAccessGa(), 403);
+
         // Datang dari tombol "Edit & Ajukan Ulang" di halaman detail request GA.
         if ($id = request()->integer('edit')) {
             $this->edit($id);

@@ -4,6 +4,7 @@
         <p class="mt-1 text-sm text-slate-500">Ringkasan request Anda di Portal Request Brilliant Think Center.</p>
     </div>
 
+    @if ($showErf)
     <div class="mb-8">
         <a href="{{ route('erf.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-indigo-600">
             Request ERF
@@ -17,6 +18,9 @@
         </div>
     </div>
 
+    @endif
+
+    @if ($showGa)
     <div class="mb-8">
         <a href="{{ route('ga.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-indigo-600">
             Request General Affair
@@ -29,8 +33,10 @@
             <x-stat-card label="Selesai" :value="$gaStats['completed']" color="emerald" :href="route('ga.index')" />
         </div>
     </div>
+    @endif
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        @if ($showErf)
         <x-card title="ERF Terbaru">
             @if ($recentErf->isEmpty())
                 <p class="py-6 text-center text-sm text-slate-400">Belum ada request ERF.</p>
@@ -48,7 +54,9 @@
                 </div>
             @endif
         </x-card>
+        @endif
 
+        @if ($showGa)
         <x-card title="GA Terbaru">
             @if ($recentGa->isEmpty())
                 <p class="py-6 text-center text-sm text-slate-400">Belum ada request GA.</p>
@@ -66,5 +74,6 @@
                 </div>
             @endif
         </x-card>
+        @endif
     </div>
 </x-layouts.app>

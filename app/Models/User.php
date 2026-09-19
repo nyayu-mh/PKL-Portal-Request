@@ -107,6 +107,23 @@ class User extends Authenticatable
     }
 
     /**
+     * Pemisahan modul: Tim GA tidak boleh melihat/membuka modul ERF (data HR yang sensitif).
+     * Super Admin selalu bisa mengakses semuanya.
+     */
+    public function canAccessErf(): bool
+    {
+        return ! $this->isGa();
+    }
+
+    /**
+     * Pemisahan modul: Tim HR tidak boleh melihat/membuka modul Request GA.
+     */
+    public function canAccessGa(): bool
+    {
+        return ! $this->isHr();
+    }
+
+    /**
      * ERF hanya boleh dibuat oleh Leader & Manager (sesuai definisi ERF).
      */
     public function canCreateErf(): bool

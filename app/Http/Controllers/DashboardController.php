@@ -33,6 +33,10 @@ class DashboardController extends Controller
         $recentErf = (clone $erfQuery)->with('pemohon')->latest()->limit(5)->get();
         $recentGa = (clone $gaQuery)->with('pemohon')->latest()->limit(5)->get();
 
-        return view('dashboard', compact('erfStats', 'gaStats', 'recentErf', 'recentGa'));
+        // Tim HR tidak melihat modul GA, Tim GA tidak melihat modul ERF (Super Admin melihat keduanya).
+        $showErf = $user->canAccessErf();
+        $showGa = $user->canAccessGa();
+
+        return view('dashboard', compact('erfStats', 'gaStats', 'recentErf', 'recentGa', 'showErf', 'showGa'));
     }
 }

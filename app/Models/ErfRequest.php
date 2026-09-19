@@ -17,12 +17,16 @@ class ErfRequest extends Model
      *  - yang ia buat sendiri, atau
      *  - yang atasan langsungnya adalah dia (untuk approval), atau
      *  - kalau ia Tim HR: semua ERF yang approval atasannya sudah beres (disetujui / tidak perlu approval).
-     * Super Admin bisa melihat semuanya.
+     * Super Admin bisa melihat semuanya. Tim GA sama sekali tidak punya akses ke modul ERF.
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
         if ($user->isAdmin()) {
             return $query;
+        }
+
+        if (! $user->canAccessErf()) {
+            return $query->whereRaw('1 = 0');
         }
 
         return $query->where(function (Builder $q) use ($user) {
@@ -37,10 +41,14 @@ class ErfRequest extends Model
 
     public function isVisibleTo(User $user): bool
     {
-        return $user->isAdmin()
-            || $this->user_id === $user->id
-            || $this->atasan_user_id === $user->id
-            || ($user->isHr() && $this->isApprovedForProcessing());
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->canAccessErf()
+            && ($this->user_id === $user->id
+                || $this->atasan_user_id === $user->id
+                || ($user->isHr() && $this->isApprovedForProcessing()));
     }
 
     protected $fillable = [

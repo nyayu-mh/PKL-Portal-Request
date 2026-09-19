@@ -205,5 +205,35 @@ class RequestVisibilityTest extends TestCase
         $this->actingAs($this->hr)->get(route('ga.show', $ga))->assertForbidden();
         $this->actingAs($this->ga)->get(route('ga.show', $ga))->assertOk();
     }
-}
 
+    public function test_tim_hr_tidak_bisa_masuk_modul_ga_dan_tim_ga_tidak_bisa_masuk_modul_erf(): void
+    {
+        // Request milik Tim HR/GA sendiri pun tidak dibuka lintas modul.
+        $gaMilikHr = $this->makeGa('menunggu', $this->hr);
+        $erfMilikGa = $this->makeErf('menunggu', $this->ga);
+
+        $this->assertSame([], $this->visibleGaIds($this->hr));
+        $this->assertSame([], $this->visibleErfIds($this->ga));
+
+        $this->actingAs($this->hr)->get(route('ga.index'))->assertForbidden();
+        $this->actingAs($this->hr)->get(route('ga.show', $gaMilikHr))->assertForbidden();
+        $this->actingAs($this->ga)->get(route('erf.index'))->assertForbidden();
+        $this->actingAs($this->ga)->get(route('erf.show', $erfMilikGa))->assertForbidden();
+
+        // Modul milik timnya sendiri tetap bisa dibuka.
+        $this->actingAs($this->hr)->get(route('erf.index'))->assertOk();
+        $this->actingAs($this->ga)->get(route('ga.index'))->assertOk();
+    }
+
+    public function test_menu_dan_dashboard_tim_hr_tanpa_ga_dan_tim_ga_tanpa_erf(): void
+    {
+        $this->actingAs($this->hr)->get(route('dashboard'))
+            ->assertOk()->assertSee('Request ERF')->assertDontSee('Request General Affair')->assertDontSee(route('ga.index'));
+
+        $this->actingAs($this->ga)->get(route('dashboard'))
+            ->assertOk()->assertSee('Request General Affair')->assertDontSee('Request ERF')->assertDontSee(route('erf.index'));
+
+        $this->actingAs($this->admin)->get(route('dashboard'))
+            ->assertOk()->assertSee(route('erf.index'))->assertSee(route('ga.index'));
+    }
+}

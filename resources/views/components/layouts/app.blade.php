@@ -1,8 +1,8 @@
 @php
     $user = auth()->user();
 
-    $pendingApprovalCount = \App\Models\ErfRequest::where('atasan_user_id', $user->id)->where('approval_status', 'menunggu')->count()
-        + \App\Models\GaRequest::where('atasan_user_id', $user->id)->where('approval_status', 'menunggu')->count();
+    $pendingApprovalCount = \App\Models\ErfRequest::visibleTo($user)->where('atasan_user_id', $user->id)->where('approval_status', 'menunggu')->count()
+        + \App\Models\GaRequest::visibleTo($user)->where('atasan_user_id', $user->id)->where('approval_status', 'menunggu')->count();
 
     // Hak akses menu per grup (role), diatur Super Admin lewat Setting > Manajemen Grup & Akses.
     // Super Admin selalu full akses; role lain pakai $default kalau belum pernah diatur eksplisit.
@@ -17,8 +17,8 @@
     $navItems = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'show' => $menuVisible('dashboard', true)],
         ['label' => 'Approval Saya', 'route' => 'approval.index', 'icon' => 'check-badge', 'show' => $menuVisible('approval', true), 'badge' => $pendingApprovalCount],
-        ['label' => 'Request ERF', 'route' => 'erf.index', 'icon' => 'user-plus', 'show' => $menuVisible('erf', true)],
-        ['label' => 'Request GA', 'route' => 'ga.index', 'icon' => 'wrench', 'show' => $menuVisible('ga', true)],
+        ['label' => 'Request ERF', 'route' => 'erf.index', 'icon' => 'user-plus', 'show' => $user->canAccessErf() && $menuVisible('erf', true)],
+        ['label' => 'Request GA', 'route' => 'ga.index', 'icon' => 'wrench', 'show' => $user->canAccessGa() && $menuVisible('ga', true)],
         ['label' => 'Request Tech', 'route' => 'placeholder.tech', 'icon' => 'code', 'show' => $menuVisible('tech', true)],
         ['label' => 'Creative Design', 'route' => 'placeholder.creative', 'icon' => 'palette', 'show' => $menuVisible('creative', true)],
         ['label' => 'Business Trip', 'route' => 'placeholder.trip', 'icon' => 'plane', 'show' => $menuVisible('business_trip', true)],
