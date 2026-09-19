@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GaAttachmentController;
 use App\Http\Controllers\PlaceholderController;
 use App\Livewire\Approval\ApprovalIndex;
 use App\Livewire\Erf\ErfIndex;
@@ -46,6 +47,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('ga')->name('ga.')->group(function () {
         Route::get('/', GaIndex::class)->name('index');
         Route::get('/{gaRequest}', GaShow::class)->name('show');
+        // Lampiran privat: dikirim lewat controller yang mengecek hak akses (bukan URL /storage publik).
+        Route::get('/{gaRequest}/lampiran/{jenis}', [GaAttachmentController::class, 'lampiran'])->name('lampiran');
+        Route::get('/{gaRequest}/quotation/{quotation}', [GaAttachmentController::class, 'quotation'])->name('quotation');
     });
 
     // Master data (HR & Admin)

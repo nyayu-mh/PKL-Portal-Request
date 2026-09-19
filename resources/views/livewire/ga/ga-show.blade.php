@@ -37,10 +37,10 @@
 
                 <div class="mt-4 flex flex-wrap gap-2">
                     @if ($gaRequest->lampiran_bukti_kondisi)
-                        <a href="{{ Illuminate\Support\Facades\Storage::url($gaRequest->lampiran_bukti_kondisi) }}" target="_blank" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50">📎 Bukti Kondisi/Kerusakan</a>
+                        <a href="{{ route('ga.lampiran', [$gaRequest, 'bukti']) }}" target="_blank" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50">📎 Bukti Kondisi/Kerusakan</a>
                     @endif
                     @if ($gaRequest->lampiran_rekomendasi_vendor)
-                        <a href="{{ Illuminate\Support\Facades\Storage::url($gaRequest->lampiran_rekomendasi_vendor) }}" target="_blank" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50">📎 Rekomendasi Vendor (Pemohon)</a>
+                        <a href="{{ route('ga.lampiran', [$gaRequest, 'rekomendasi']) }}" target="_blank" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50">📎 Rekomendasi Vendor (Pemohon)</a>
                     @endif
                 </div>
             </x-card>
@@ -54,7 +54,7 @@
                                     <p class="truncate text-sm font-medium text-slate-900">{{ $q->nama_vendor }} @if($q->is_terpilih)<span class="ml-1 text-xs font-semibold text-emerald-600">✓ Terpilih</span>@endif</p>
                                     <p class="text-xs text-slate-500">
                                         @if($q->harga_penawaran) Rp {{ number_format($q->harga_penawaran, 0, ',', '.') }} &middot; @endif
-                                        <a href="{{ Illuminate\Support\Facades\Storage::url($q->file_path) }}" target="_blank" class="text-indigo-600 hover:underline">Lihat File</a>
+                                        <a href="{{ route('ga.quotation', [$gaRequest, $q]) }}" target="_blank" class="text-indigo-600 hover:underline">Lihat File</a>
                                     </p>
                                 </div>
                                 @if ($canManage)

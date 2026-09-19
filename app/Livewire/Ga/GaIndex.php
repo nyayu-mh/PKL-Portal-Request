@@ -148,8 +148,8 @@ class GaIndex extends Component
         $picGa = User::where('role', 'ga')->where('is_active', true)->orderBy('id')->first();
 
         $paths = [
-            'lampiran_bukti_kondisi' => $this->lampiran_bukti_kondisi?->store('ga/bukti-kondisi', 'public') ?? $this->existing_lampiran_bukti_kondisi,
-            'lampiran_rekomendasi_vendor' => $this->lampiran_rekomendasi_vendor?->store('ga/rekomendasi-vendor', 'public') ?? $this->existing_lampiran_rekomendasi_vendor,
+            'lampiran_bukti_kondisi' => $this->lampiran_bukti_kondisi?->store('ga/bukti-kondisi', 'local') ?? $this->existing_lampiran_bukti_kondisi,
+            'lampiran_rekomendasi_vendor' => $this->lampiran_rekomendasi_vendor?->store('ga/rekomendasi-vendor', 'local') ?? $this->existing_lampiran_rekomendasi_vendor,
         ];
 
         $needsApproval = $user->needsAtasanApproval();

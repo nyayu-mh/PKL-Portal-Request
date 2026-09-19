@@ -182,7 +182,7 @@ class GaShow extends Component
             'new_vendor_harga' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $path = $this->new_vendor_file->store('ga/quotations', 'public');
+        $path = $this->new_vendor_file->store('ga/quotations', 'local');
 
         GaVendorQuotation::create([
             'ga_request_id' => $this->gaRequest->id,
@@ -215,7 +215,7 @@ class GaShow extends Component
         abort_unless($this->canManage(), 403);
 
         $quotation = GaVendorQuotation::findOrFail($quotationId);
-        Storage::disk('public')->delete($quotation->file_path);
+        Storage::disk('local')->delete($quotation->file_path);
         $quotation->delete();
     }
 
