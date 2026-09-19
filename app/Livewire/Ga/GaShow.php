@@ -48,11 +48,7 @@ class GaShow extends Component
 
     public function mount(GaRequest $gaRequest): void
     {
-        $user = Auth::user();
-        abort_unless(
-            $user->isAdmin() || $user->isGa() || $gaRequest->user_id === $user->id || $gaRequest->atasan_user_id === $user->id,
-            403
-        );
+        abort_unless($gaRequest->isVisibleTo(Auth::user()), 403);
 
         $this->gaRequest = $gaRequest;
         $this->butuh_vendor = $gaRequest->butuh_vendor;

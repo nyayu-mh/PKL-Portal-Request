@@ -12,17 +12,9 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $erfQuery = ErfRequest::query();
-        $gaQuery = GaRequest::query();
-
-        // Selain request milik sendiri, atasan tetap bisa memantau progress request
-        // yang pernah/sedang perlu approval-nya.
-        if (! $user->isAdmin() && ! $user->isHr()) {
-            $erfQuery->where(fn ($q) => $q->where('user_id', $user->id)->orWhere('atasan_user_id', $user->id));
-        }
-        if (! $user->isAdmin() && ! $user->isGa()) {
-            $gaQuery->where(fn ($q) => $q->where('user_id', $user->id)->orWhere('atasan_user_id', $user->id));
-        }
+        // Aturan akses (pembuat, atasan langsung, atau Tim HR/GA) ada di scope visibleTo() model.
+        $erfQuery = ErfRequest::query()->visibleTo($user);
+        $gaQuery = GaRequest::query()->visibleTo($user);
 
         $erfStats = [
             'total' => (clone $erfQuery)->count(),

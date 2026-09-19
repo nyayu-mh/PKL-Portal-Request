@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,38 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ErfRequest extends Model
 {
     protected $table = 'erf_requests';
+
+    /**
+     * ATURAN AKSES ERF (data sensitif) — satu-satunya sumber kebenaran, dipakai di list,
+     * dashboard, dan halaman detail. User hanya boleh melihat ERF:
+     *  - yang ia buat sendiri, atau
+     *  - yang atasan langsungnya adalah dia (untuk approval), atau
+     *  - kalau ia Tim HR: semua ERF yang approval atasannya sudah beres (disetujui / tidak perlu approval).
+     * Super Admin bisa melihat semuanya.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('user_id', $user->id)
+                ->orWhere('atasan_user_id', $user->id);
+
+            if ($user->isHr()) {
+                $q->orWhereIn('approval_status', ['disetujui', 'tidak_perlu']);
+            }
+        });
+    }
+
+    public function isVisibleTo(User $user): bool
+    {
+        return $user->isAdmin()
+            || $this->user_id === $user->id
+            || $this->atasan_user_id === $user->id
+            || ($user->isHr() && $this->isApprovedForProcessing());
+    }
 
     protected $fillable = [
         'erf_id', 'user_id', 'tanggal_request', 'jenis_erf', 'jumlah_karyawan',

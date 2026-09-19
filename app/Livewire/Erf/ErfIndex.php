@@ -215,21 +215,8 @@ class ErfIndex extends Component
     {
         $user = Auth::user();
 
-        $query = ErfRequest::query()->with(['pemohon', 'jabatanDibutuhkan'])->latest();
-
-        if (! $user->isAdmin() && ! $user->isHr()) {
-            // Selain request milik sendiri, atasan juga tetap bisa memantau request
-            // yang pernah/sedang perlu approval-nya (baik masih menunggu, sudah disetujui, atau ditolak).
-            $query->where(function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                    ->orWhere('atasan_user_id', $user->id);
-            });
-        } elseif ($user->isHr() && ! $user->isAdmin()) {
-            // Tim HR cuma memproses ERF yang approval atasannya sudah beres (disetujui atau
-            // memang tidak perlu approval) — yang masih menunggu/revisi/ditolak disembunyikan
-            // dari menu ini supaya tidak membingungkan (belum bisa diproses HR).
-            $query->whereIn('approval_status', ['disetujui', 'tidak_perlu']);
-        }
+        // Aturan akses (pembuat, atasan langsung, atau Tim HR) ada di scope visibleTo() model.
+        $query = ErfRequest::query()->visibleTo($user)->with(['pemohon', 'jabatanDibutuhkan'])->latest();
 
         if ($this->search !== '') {
             $query->where(function ($q) {

@@ -25,11 +25,7 @@ class ErfShow extends Component
 
     public function mount(ErfRequest $erfRequest): void
     {
-        $user = Auth::user();
-        abort_unless(
-            $user->isAdmin() || $user->isHr() || $erfRequest->user_id === $user->id || $erfRequest->atasan_user_id === $user->id,
-            403
-        );
+        abort_unless($erfRequest->isVisibleTo(Auth::user()), 403);
 
         $this->erfRequest = $erfRequest;
         $this->status = $erfRequest->status;
