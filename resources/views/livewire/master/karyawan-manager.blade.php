@@ -34,7 +34,7 @@
             </div>
             <div>
                 <label class="mb-1 block text-sm font-medium text-slate-700">Divisi</label>
-                <input type="text" wire:model="divisi" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <x-divisi-select model="divisi" :current="$divisi" :options="$divisiPilihan" />
             </div>
             <div>
                 <label class="mb-1 block text-sm font-medium text-slate-700">Jabatan</label>

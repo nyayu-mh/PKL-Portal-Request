@@ -3,6 +3,7 @@
 namespace App\Livewire\Master;
 
 use App\Livewire\Concerns\WithCsvImport;
+use App\Models\MasterDivisi;
 use App\Models\MasterJabatanTtf;
 use App\Models\User;
 use Livewire\Attributes\Layout;
@@ -150,6 +151,7 @@ class JabatanTtfManager extends Component
         return view('livewire.master.jabatan-ttf-manager', [
             'items' => MasterJabatanTtf::with('picHr')->orderBy('nama_jabatan')->paginate(10),
             'hrUsers' => User::where('role', 'hr')->orderBy('name')->get(),
+            'divisiPilihan' => MasterDivisi::daftarPilihan(),
         ]);
     }
 }

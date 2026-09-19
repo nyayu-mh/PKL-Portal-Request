@@ -32,12 +32,9 @@
             </div>
             <div>
                 <label class="mb-1 block text-sm font-medium text-slate-700">Divisi</label>
-                <select wire:model="master_divisi_id" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="">— Tidak terikat divisi tertentu —</option>
-                    @foreach ($divisiOptions as $d)
-                        <option value="{{ $d->id }}">{{ $d->nama_divisi }}</option>
-                    @endforeach
-                </select>
+                <x-divisi-select model="master_divisi_id" manual-model="divisi_baru" :current="$master_divisi_id" :current-manual="$divisi_baru"
+                    :options="$divisiOptions->pluck('nama_divisi', 'id')->all()" placeholder="— Tidak terikat divisi tertentu —" />
+                <p class="mt-1 text-xs text-slate-400">Kalau divisinya belum ada, pilih "Ketik manual" — divisi baru otomatis masuk ke Master Data Divisi.</p>
                 @error('master_divisi_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
             </div>
             <label class="flex items-center gap-2 text-sm text-slate-700">

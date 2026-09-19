@@ -3,6 +3,7 @@
 namespace App\Livewire\Master;
 
 use App\Livewire\Concerns\WithCsvImport;
+use App\Models\MasterDivisi;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -289,6 +290,7 @@ class UserManager extends Component
             'jabatanLevelOptions' => User::jabatanLevelLabels(),
             'roleOptions' => User::roleLabels(),
             'brandOptions' => User::brandLabels(),
+            'divisiPilihan' => MasterDivisi::daftarPilihan(),
             'atasanOptions' => User::where('is_active', true)
                 ->when($this->editingId, fn ($q) => $q->where('id', '!=', $this->editingId))
                 ->orderBy('name')->get(),

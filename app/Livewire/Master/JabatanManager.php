@@ -23,6 +23,9 @@ class JabatanManager extends Component
 
     public ?int $master_divisi_id = null;
 
+    /** Nama divisi baru yang diketik manual (dibuat di Master Data Divisi saat disimpan). */
+    public string $divisi_baru = '';
+
     public bool $is_active = true;
 
     public bool $showForm = false;
@@ -32,6 +35,7 @@ class JabatanManager extends Component
         return [
             'nama_jabatan' => ['required', 'string', 'max:150'],
             'master_divisi_id' => ['nullable', 'exists:master_divisi,id'],
+            'divisi_baru' => ['nullable', 'string', 'max:150'],
             'is_active' => ['boolean'],
         ];
     }
@@ -56,6 +60,15 @@ class JabatanManager extends Component
     {
         $data = $this->validate();
 
+        $divisiBaru = trim($data['divisi_baru'] ?? '');
+        unset($data['divisi_baru']);
+        if ($divisiBaru !== '') {
+            // Cocokkan tanpa membedakan huruf besar/kecil supaya tidak muncul divisi ganda.
+            $divisi = MasterDivisi::whereRaw('LOWER(nama_divisi) = ?', [mb_strtolower($divisiBaru)])->first()
+                ?? MasterDivisi::create(['nama_divisi' => $divisiBaru]);
+            $data['master_divisi_id'] = $divisi->id;
+        }
+
         MasterJabatan::updateOrCreate(['id' => $this->editingId], $data);
 
         session()->flash('success', 'Data jabatan berhasil disimpan.');
@@ -70,7 +83,7 @@ class JabatanManager extends Component
 
     public function resetForm(): void
     {
-        $this->reset(['editingId', 'nama_jabatan', 'master_divisi_id', 'showForm']);
+        $this->reset(['editingId', 'nama_jabatan', 'master_divisi_id', 'divisi_baru', 'showForm']);
         $this->is_active = true;
         $this->resetErrorBag();
     }

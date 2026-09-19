@@ -3,6 +3,7 @@
 namespace App\Livewire\Master;
 
 use App\Livewire\Concerns\WithCsvImport;
+use App\Models\MasterDivisi;
 use App\Models\MasterKaryawan;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -136,6 +137,7 @@ class KaryawanManager extends Component
     public function render()
     {
         return view('livewire.master.karyawan-manager', [
+            'divisiPilihan' => MasterDivisi::daftarPilihan(),
             'items' => MasterKaryawan::when($this->search, fn ($q) => $q->where('nama', 'like', "%{$this->search}%"))
                 ->orderBy('nama')->paginate(10),
         ]);
