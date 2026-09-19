@@ -151,6 +151,7 @@
                             <td class="px-5 py-3">
                                 <span class="block text-slate-900">{{ $ga->pemohon->name }}</span>
                                 <span class="block text-xs text-slate-500">{{ $ga->pemohon->jabatan ?: '-' }}</span>
+                                <x-brand-badge :user="$ga->pemohon" class="mt-1" />
                             </td>
                             <td class="px-5 py-3 text-slate-600">{{ $ga->jenisLabel() }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $ga->lokasiLabel() }}</td>

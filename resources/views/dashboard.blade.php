@@ -1,6 +1,9 @@
 <x-layouts.app title="Dashboard">
     <div class="mb-6">
-        <h2 class="text-xl font-semibold text-slate-900">Halo, {{ auth()->user()->name }} 👋</h2>
+        <h2 class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xl font-semibold text-slate-900">
+            <span>Halo, {{ auth()->user()->name }} 👋</span>
+            <x-brand-badge :user="auth()->user()" />
+        </h2>
         <p class="mt-1 text-sm text-slate-500">Ringkasan request Anda di Portal Request Brilliant Think Center.</p>
     </div>
 
@@ -46,7 +49,10 @@
                         <a href="{{ route('erf.show', $erf) }}" class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-slate-50">
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-medium text-slate-900">{{ $erf->erf_id }}</p>
-                                <p class="truncate text-xs text-slate-500">{{ $erf->pemohon->name }} &middot; {{ $erf->tanggal_request->translatedFormat('d M Y') }}</p>
+                                <p class="flex items-center gap-2 text-xs text-slate-500">
+                                    <span class="truncate">{{ $erf->pemohon->name }} &middot; {{ $erf->tanggal_request->translatedFormat('d M Y') }}</span>
+                                    <x-brand-badge :user="$erf->pemohon" class="shrink-0" />
+                                </p>
                             </div>
                             <x-status-badge :color="$erf->statusBadgeColor()" :label="$erf->statusLabel()" />
                         </a>
@@ -66,7 +72,10 @@
                         <a href="{{ route('ga.show', $ga) }}" class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-slate-50">
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-medium text-slate-900">{{ $ga->ga_id }} &middot; {{ $ga->judul }}</p>
-                                <p class="truncate text-xs text-slate-500">{{ $ga->pemohon->name }} &middot; {{ $ga->tanggal_request->translatedFormat('d M Y') }}</p>
+                                <p class="flex items-center gap-2 text-xs text-slate-500">
+                                    <span class="truncate">{{ $ga->pemohon->name }} &middot; {{ $ga->tanggal_request->translatedFormat('d M Y') }}</span>
+                                    <x-brand-badge :user="$ga->pemohon" class="shrink-0" />
+                                </p>
                             </div>
                             <x-status-badge :color="$ga->statusBadgeColor()" :label="$ga->statusLabel()" />
                         </a>

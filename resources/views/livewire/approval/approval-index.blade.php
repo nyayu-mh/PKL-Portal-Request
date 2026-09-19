@@ -25,7 +25,10 @@
                         @forelse ($erfs as $erf)
                             <tr wire:key="erf-{{ $erf->id }}" onclick="window.location='{{ route('erf.show', $erf) }}'" class="cursor-pointer hover:bg-slate-50">
                                 <td class="px-5 py-3 font-medium text-slate-900">{{ $erf->erf_id }}</td>
-                                <td class="px-5 py-3 text-slate-600">{{ $erf->pemohon->name }}</td>
+                                <td class="px-5 py-3 text-slate-600">
+                                    <span class="block">{{ $erf->pemohon->name }}</span>
+                                    <x-brand-badge :user="$erf->pemohon" class="mt-1" />
+                                </td>
                                 <td class="px-5 py-3 text-slate-600">{{ $erf->jabatanDibutuhkan->nama_jabatan ?? '-' }}</td>
                                 <td class="px-5 py-3 text-slate-600">{{ $erf->tanggal_request->translatedFormat('d M Y') }}</td>
                                 <td class="px-5 py-3 text-right"><span class="text-xs font-semibold text-indigo-600">Review &rarr;</span></td>
@@ -54,7 +57,10 @@
                         @forelse ($gas as $ga)
                             <tr wire:key="ga-{{ $ga->id }}" onclick="window.location='{{ route('ga.show', $ga) }}'" class="cursor-pointer hover:bg-slate-50">
                                 <td class="px-5 py-3 font-medium text-slate-900">{{ $ga->ga_id }}</td>
-                                <td class="px-5 py-3 text-slate-600">{{ $ga->pemohon->name }}</td>
+                                <td class="px-5 py-3 text-slate-600">
+                                    <span class="block">{{ $ga->pemohon->name }}</span>
+                                    <x-brand-badge :user="$ga->pemohon" class="mt-1" />
+                                </td>
                                 <td class="px-5 py-3 text-slate-600">{{ $ga->judul }}</td>
                                 <td class="px-5 py-3 text-slate-600">{{ $ga->tanggal_request->translatedFormat('d M Y') }}</td>
                                 <td class="px-5 py-3 text-right"><span class="text-xs font-semibold text-indigo-600">Review &rarr;</span></td>

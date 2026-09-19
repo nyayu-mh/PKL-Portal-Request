@@ -80,6 +80,17 @@ class User extends Authenticatable
         return self::brandLabels()[$this->brand] ?? '-';
     }
 
+    /** Warna lencana brand di seluruh tampilan (konsisten di dashboard, daftar, approval, detail, admin). */
+    public function brandBadgeColor(): string
+    {
+        return match ($this->brand) {
+            'wookey_wight' => 'indigo',
+            'so_honey_jr' => 'orange',
+            'semua' => 'emerald',
+            default => 'gray',
+        };
+    }
+
     public function jabatanLevelLabel(): string
     {
         return self::jabatanLevelLabels()[$this->jabatan_level] ?? $this->jabatan_level;

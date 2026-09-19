@@ -136,7 +136,7 @@
                             <td class="px-5 py-3 text-slate-600">{{ $item->atasan->name ?? '-' }}</td>
                             <td class="px-5 py-3 text-slate-600">
                                 @if ($item->brand)
-                                    <x-status-badge :color="$item->brand === 'semua' ? 'emerald' : ($item->brand === 'wookey_wight' ? 'indigo' : 'orange')" :label="$item->brandLabel()" />
+                                    <x-brand-badge :user="$item" />
                                 @else
                                     <span class="text-slate-400">-</span>
                                 @endif

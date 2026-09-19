@@ -171,6 +171,7 @@
                             <td class="px-5 py-3">
                                 <span class="block text-slate-900">{{ $erf->pemohon->name }}</span>
                                 <span class="block text-xs text-slate-500">{{ $erf->pemohon->jabatan ?: '-' }}</span>
+                                <x-brand-badge :user="$erf->pemohon" class="mt-1" />
                             </td>
                             <td class="px-5 py-3 text-slate-600">{{ $erf->jenis_erf === 'karyawan_baru' ? 'Karyawan Baru' : 'Pengganti' }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $erf->jabatanDibutuhkan->nama_jabatan ?? '-' }}</td>

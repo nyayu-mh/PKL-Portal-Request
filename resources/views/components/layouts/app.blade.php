@@ -155,7 +155,7 @@
                     </div>
                     <div class="min-w-0 flex-1 leading-tight">
                         <p class="truncate text-xs font-medium text-white">{{ $user->name }}</p>
-                        <p class="truncate text-[11px] text-slate-400">{{ $user->roleLabel() }}</p>
+                        <p class="truncate text-[11px] text-slate-400">{{ $user->roleLabel() }}@if ($user->brand) &middot; {{ $user->brandLabel() }}@endif</p>
                     </div>
                 </div>
             </div>

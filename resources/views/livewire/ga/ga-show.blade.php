@@ -19,6 +19,7 @@
                 <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div><dt class="text-xs font-medium text-slate-500">Nama Pemohon</dt><dd class="text-sm text-slate-900">{{ $gaRequest->pemohon->name }}</dd></div>
                     <div><dt class="text-xs font-medium text-slate-500">Email Pemohon</dt><dd class="text-sm text-slate-900">{{ $gaRequest->pemohon->email }}</dd></div>
+                    <div><dt class="text-xs font-medium text-slate-500">Brand</dt><dd class="text-sm text-slate-900"><x-brand-badge :user="$gaRequest->pemohon" empty="Belum diatur" /></dd></div>
                     <div><dt class="text-xs font-medium text-slate-500">Divisi &amp; Jabatan</dt><dd class="text-sm text-slate-900">{{ $gaRequest->pemohon->divisi_jabatan }}</dd></div>
                     <div><dt class="text-xs font-medium text-slate-500">Tanggal Request</dt><dd class="text-sm text-slate-900">{{ $gaRequest->tanggal_request->translatedFormat('d F Y') }}</dd></div>
                 </dl>
