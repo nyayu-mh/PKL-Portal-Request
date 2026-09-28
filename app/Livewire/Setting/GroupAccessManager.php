@@ -60,13 +60,14 @@ class GroupAccessManager extends Component
             );
         }
 
-        session()->flash('success', 'Hak akses grup "'.MenuPermission::groupLabels()[$this->selectedRole].'" berhasil disimpan.');
+        session()->flash('success', 'Hak akses grup "'.MenuPermission::groupLabel($this->selectedRole).'" berhasil disimpan.');
     }
 
     public function render()
     {
         return view('livewire.setting.group-access-manager', [
-            'groupOptions' => MenuPermission::groupLabels(),
+            'roleGroupOptions' => MenuPermission::groupLabels(),
+            'jabatanGroupOptions' => MenuPermission::jabatanGroupOptions(),
             'menuOptions' => MenuPermission::menuList(),
         ]);
     }

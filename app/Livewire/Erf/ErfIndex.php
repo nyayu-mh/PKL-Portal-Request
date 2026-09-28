@@ -23,6 +23,13 @@ class ErfIndex extends Component
 
     public string $status = '';
 
+    public string $tanggal_dari = '';
+
+    public string $tanggal_sampai = '';
+
+    /** Hanya diisi & ditampilkan untuk yang berhak lintas-brand: Manager, Tim HR, Tim GA, Super Admin. */
+    public string $brand = '';
+
     // ── Form Buat/Ajukan Ulang ERF (pop-up) ─────────────────────────
 
     public bool $showForm = false;
@@ -62,7 +69,7 @@ class ErfIndex extends Component
 
     public function updating($property): void
     {
-        if (in_array($property, ['search', 'status'])) {
+        if (in_array($property, ['search', 'status', 'tanggal_dari', 'tanggal_sampai', 'brand'])) {
             $this->resetPage();
         }
     }
@@ -231,12 +238,28 @@ class ErfIndex extends Component
             $query->where('status', $this->status);
         }
 
+        if ($this->tanggal_dari !== '') {
+            $query->whereDate('tanggal_request', '>=', $this->tanggal_dari);
+        }
+
+        if ($this->tanggal_sampai !== '') {
+            $query->whereDate('tanggal_request', '<=', $this->tanggal_sampai);
+        }
+
+        // Filter brand hanya untuk yang memang melihat request lintas pemohon (bukan sekadar milik sendiri).
+        $showBrandFilter = $user->isAdmin() || $user->isHr() || $user->jabatan_level === 'manager';
+        if ($showBrandFilter && $this->brand !== '') {
+            $query->whereHas('pemohon', fn ($q) => $q->where('brand', $this->brand));
+        }
+
         return view('livewire.erf.erf-index', [
             'erfs' => $query->paginate(10),
             'canCreate' => $user->canCreateErf(),
             'statusOptions' => ErfRequest::statusLabels(),
             'jabatanOptions' => MasterJabatanTtf::where('is_active', true)->orderBy('nama_jabatan')->get(),
             'karyawanOptions' => MasterKaryawan::where('status_aktif', true)->orderBy('nama')->get(),
+            'showBrandFilter' => $showBrandFilter,
+            'brandOptions' => \App\Models\User::brandLabels(),
         ]);
     }
 }

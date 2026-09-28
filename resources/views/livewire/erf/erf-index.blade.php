@@ -141,7 +141,7 @@
     </x-modal>
 
     <x-card>
-        <div class="mb-4 flex flex-wrap gap-3">
+        <div class="mb-4 flex flex-wrap items-end gap-3">
             <input type="text" wire:model.live.debounce.400ms="search" placeholder="Cari ERF ID / nama pemohon..." class="w-full max-w-xs rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             <select wire:model.live="status" class="rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option value="">Semua Status</option>
@@ -149,6 +149,24 @@
                     <option value="{{ $key }}">{{ $label }}</option>
                 @endforeach
             </select>
+            <div class="flex items-end gap-2">
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-slate-500">Dari Tanggal</label>
+                    <input type="date" wire:model.live="tanggal_dari" class="rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-slate-500">Sampai Tanggal</label>
+                    <input type="date" wire:model.live="tanggal_sampai" class="rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+            </div>
+            @if ($showBrandFilter)
+                <select wire:model.live="brand" class="rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">Semua Brand</option>
+                    @foreach ($brandOptions as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
 
         <div class="-mx-5 overflow-x-auto">
@@ -159,6 +177,7 @@
                         <th class="px-5 py-3 font-medium">Pemohon</th>
                         <th class="px-5 py-3 font-medium">Jenis</th>
                         <th class="px-5 py-3 font-medium">Jabatan</th>
+                        <th class="px-5 py-3 font-medium">Tanggal Request</th>
                         <th class="px-5 py-3 font-medium">Estimasi Fulfillment</th>
                         <th class="px-5 py-3 font-medium">Approval Atasan</th>
                         <th class="px-5 py-3 font-medium">Status</th>
@@ -175,12 +194,13 @@
                             </td>
                             <td class="px-5 py-3 text-slate-600">{{ $erf->jenis_erf === 'karyawan_baru' ? 'Karyawan Baru' : 'Pengganti' }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $erf->jabatanDibutuhkan->nama_jabatan ?? '-' }}</td>
+                            <td class="px-5 py-3 text-slate-600">{{ $erf->tanggal_request->translatedFormat('d M Y') }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ optional($erf->estimasi_tanggal_fulfillment)->translatedFormat('d M Y') ?? '-' }}</td>
                             <td class="px-5 py-3"><x-status-badge :color="$erf->approvalStatusBadgeColor()" :label="$erf->approvalStatusLabel()" /></td>
                             <td class="px-5 py-3"><x-status-badge :color="$erf->statusBadgeColor()" :label="$erf->statusLabel()" /></td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-400">Belum ada data ERF.</td></tr>
+                        <tr><td colspan="8" class="px-5 py-10 text-center text-sm text-slate-400">Belum ada data ERF.</td></tr>
                     @endforelse
                 </tbody>
             </table>

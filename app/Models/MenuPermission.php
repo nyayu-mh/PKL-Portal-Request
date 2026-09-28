@@ -43,7 +43,7 @@ class MenuPermission extends Model
     }
 
     /**
-     * Grup yang bisa diatur aksesnya. Super Admin (role=admin) sengaja tidak masuk daftar ini —
+     * Grup dasar berdasarkan peran. Super Admin (role=admin) sengaja tidak masuk daftar ini —
      * Super Admin selalu full akses ke semua menu.
      *
      * @return array<string, string> role => label
@@ -55,6 +55,43 @@ class MenuPermission extends Model
             'hr' => 'Tim HR',
             'ga' => 'Tim General Affair',
         ];
+    }
+
+    /**
+     * Grup tambahan berdasarkan jabatan di Master Data > Jabatan (mis. "Manager", "Leader", "Staff HR").
+     * Kunci diberi awalan "jabatan:" supaya tidak bentrok dengan kunci role di atas. Kalau ada baris hak akses
+     * eksplisit untuk jabatan seorang user, aturannya menimpa aturan peran (lihat allowsForUser()).
+     *
+     * @return array<string, string> "jabatan:<id>" => "Nama Jabatan — Divisi"
+     */
+    public static function jabatanGroupOptions(): array
+    {
+        return MasterJabatan::query()->where('is_active', true)->with('divisi')->get()
+            ->sortBy(fn (MasterJabatan $j) => mb_strtolower(($j->divisi->nama_divisi ?? 'zzz').' '.$j->nama_jabatan))
+            ->mapWithKeys(fn (MasterJabatan $j) => [
+                "jabatan:{$j->id}" => $j->nama_jabatan.($j->divisi ? ' — '.$j->divisi->nama_divisi : ''),
+            ])
+            ->all();
+    }
+
+    /**
+     * Label yang enak dibaca untuk kunci grup apa pun (role biasa atau "jabatan:<id>") — dipakai di pesan flash.
+     */
+    public static function groupLabel(string $groupKey): string
+    {
+        if (isset(static::groupLabels()[$groupKey])) {
+            return static::groupLabels()[$groupKey];
+        }
+
+        if (str_starts_with($groupKey, 'jabatan:')) {
+            $jabatan = MasterJabatan::with('divisi')->find((int) substr($groupKey, 8));
+
+            return $jabatan
+                ? $jabatan->nama_jabatan.($jabatan->divisi ? ' — '.$jabatan->divisi->nama_divisi : '')
+                : 'Jabatan (sudah dihapus)';
+        }
+
+        return $groupKey;
     }
 
     /**
@@ -74,5 +111,22 @@ class MenuPermission extends Model
             'delete' => $row->can_delete,
             default => $row->can_view,
         };
+    }
+
+    /**
+     * Hak akses efektif seorang user: kalau jabatannya (field "Jabatan" di profil, dicocokkan ke Master Data >
+     * Jabatan) punya aturan eksplisit untuk menu ini, aturan itu yang dipakai. Kalau tidak, pakai aturan
+     * berdasarkan peran (karyawan/hr/ga) seperti sebelumnya. null = belum diatur sama sekali, pakai default.
+     */
+    public static function allowsForUser(User $user, string $menuKey, string $action = 'view'): ?bool
+    {
+        if ($jabatanKey = $user->jabatanGroupKey()) {
+            $viaJabatan = static::allows($jabatanKey, $menuKey, $action);
+            if ($viaJabatan !== null) {
+                return $viaJabatan;
+            }
+        }
+
+        return static::allows($user->role, $menuKey, $action);
     }
 }

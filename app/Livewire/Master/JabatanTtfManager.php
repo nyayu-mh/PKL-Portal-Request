@@ -16,6 +16,8 @@ class JabatanTtfManager extends Component
 {
     use WithCsvImport, WithFileUploads, WithPagination;
 
+    public string $search = '';
+
     public ?int $editingId = null;
 
     public string $nama_jabatan = '';
@@ -81,6 +83,11 @@ class JabatanTtfManager extends Component
         $this->target_hari_kerja = 14;
         $this->is_active = true;
         $this->resetErrorBag();
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
     }
 
     // ── Import CSV ────────────────────────────────────────────────
@@ -149,7 +156,12 @@ class JabatanTtfManager extends Component
     public function render()
     {
         return view('livewire.master.jabatan-ttf-manager', [
-            'items' => MasterJabatanTtf::with('picHr')->orderBy('nama_jabatan')->paginate(10),
+            'items' => MasterJabatanTtf::with('picHr')
+                ->when($this->search !== '', fn ($q) => $q->where(function ($q2) {
+                    $q2->where('nama_jabatan', 'like', "%{$this->search}%")
+                        ->orWhere('divisi', 'like', "%{$this->search}%");
+                }))
+                ->orderBy('nama_jabatan')->paginate(10),
             'hrUsers' => User::where('role', 'hr')->orderBy('name')->get(),
             'divisiPilihan' => MasterDivisi::daftarPilihan(),
         ]);

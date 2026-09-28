@@ -58,6 +58,8 @@
     </x-modal>
 
     <x-card>
+        <input type="text" wire:model.live.debounce.400ms="search" placeholder="Cari nama jabatan / divisi..." class="mb-4 w-full max-w-xs rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+
         <div class="-mx-5 overflow-x-auto">
             <table class="w-full min-w-[720px] text-left text-sm">
                 <thead>

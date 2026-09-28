@@ -9,13 +9,27 @@
     @endif
 
     <x-card>
-        <div class="mb-5 max-w-xs">
+        <div class="mb-5 max-w-sm">
             <label class="mb-1 block text-sm font-medium text-slate-700">Pilih Grup</label>
             <select wire:model.live="selectedRole" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                @foreach ($groupOptions as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
+                <optgroup label="Berdasarkan Peran">
+                    @foreach ($roleGroupOptions as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </optgroup>
+                @if (count($jabatanGroupOptions))
+                    <optgroup label="Berdasarkan Jabatan (Master Data &gt; Jabatan)">
+                        @foreach ($jabatanGroupOptions as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </optgroup>
+                @endif
             </select>
+            <p class="mt-1 text-xs text-slate-400">
+                Grup jabatan berlaku untuk user yang field "Jabatan"-nya sama persis dengan nama jabatan tersebut (diatur di Manajemen User atau Data Karyawan).
+                Kalau grup jabatan mengatur menu tertentu secara eksplisit, aturannya <strong>menimpa</strong> aturan Peran untuk user itu.
+                Belum ada jabatan di daftar? Tambah dulu di Master Data &gt; Jabatan.
+            </p>
         </div>
 
         <form wire:submit="save">

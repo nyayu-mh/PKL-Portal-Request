@@ -22,6 +22,13 @@ class GaIndex extends Component
 
     public string $status = '';
 
+    public string $tanggal_dari = '';
+
+    public string $tanggal_sampai = '';
+
+    /** Hanya diisi & ditampilkan untuk yang berhak lintas-brand: Manager, Tim GA, Super Admin. */
+    public string $brand = '';
+
     // ── Form Buat/Ajukan Ulang Request GA (pop-up) ──────────────────
 
     public bool $showForm = false;
@@ -64,7 +71,7 @@ class GaIndex extends Component
 
     public function updating($property): void
     {
-        if (in_array($property, ['search', 'status'])) {
+        if (in_array($property, ['search', 'status', 'tanggal_dari', 'tanggal_sampai', 'brand'])) {
             $this->resetPage();
         }
     }
@@ -222,10 +229,26 @@ class GaIndex extends Component
             $query->where('status', $this->status);
         }
 
+        if ($this->tanggal_dari !== '') {
+            $query->whereDate('tanggal_request', '>=', $this->tanggal_dari);
+        }
+
+        if ($this->tanggal_sampai !== '') {
+            $query->whereDate('tanggal_request', '<=', $this->tanggal_sampai);
+        }
+
+        // Filter brand hanya untuk yang memang melihat request lintas pemohon (bukan sekadar milik sendiri).
+        $showBrandFilter = $user->isAdmin() || $user->isGa() || $user->jabatan_level === 'manager';
+        if ($showBrandFilter && $this->brand !== '') {
+            $query->whereHas('pemohon', fn ($q) => $q->where('brand', $this->brand));
+        }
+
         return view('livewire.ga.ga-index', [
             'gas' => $query->paginate(10),
             'canCreate' => $user->canCreateGa(),
             'statusOptions' => GaRequest::statusLabels(),
+            'showBrandFilter' => $showBrandFilter,
+            'brandOptions' => User::brandLabels(),
         ]);
     }
 }

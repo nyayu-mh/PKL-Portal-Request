@@ -11,7 +11,7 @@
             return true;
         }
 
-        return \App\Models\MenuPermission::allows($user->role, $menuKey, 'view') ?? $default;
+        return \App\Models\MenuPermission::allowsForUser($user, $menuKey, 'view') ?? $default;
     };
 
     $navItems = [

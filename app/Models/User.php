@@ -103,6 +103,29 @@ class User extends Authenticatable
 
     // ── Helper hak akses ──────────────────────────────────────────
 
+    /**
+     * Kunci grup jabatan ("jabatan:<id>") untuk Setting > Manajemen Grup & Akses, dicocokkan dari field
+     * "Jabatan" (teks bebas) ke nama jabatan di Master Data > Jabatan (tidak peduli huruf besar/kecil).
+     * null kalau jabatannya kosong atau tidak cocok dengan Master Data manapun.
+     */
+    public function jabatanGroupKey(): ?string
+    {
+        if (! $this->jabatanGroupKeyResolved) {
+            $this->jabatanGroupKeyResolved = true;
+            $nama = trim((string) $this->jabatan);
+            $match = $nama !== ''
+                ? MasterJabatan::whereRaw('LOWER(nama_jabatan) = ?', [mb_strtolower($nama)])->first()
+                : null;
+            $this->cachedJabatanGroupKey = $match ? "jabatan:{$match->id}" : null;
+        }
+
+        return $this->cachedJabatanGroupKey;
+    }
+
+    private bool $jabatanGroupKeyResolved = false;
+
+    private ?string $cachedJabatanGroupKey = null;
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
