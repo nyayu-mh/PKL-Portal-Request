@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Livewire\Master\JabatanTtfManager;
 use App\Livewire\Setting\GroupAccessManager;
-use App\Models\MasterDivisi;
-use App\Models\MasterJabatan;
 use App\Models\MasterJabatanTtf;
 use App\Models\MenuPermission;
 use App\Models\User;
@@ -14,7 +12,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Search di menu Jabatan & TTF, dan Manajemen Grup & Akses berbasis jabatan (Master Data > Jabatan).
+ * Search di menu Jabatan & TTF, dan Manajemen Grup & Akses berbasis Divisi-Level (dari Manajemen User).
  */
 class MasterDataExtraTest extends TestCase
 {
@@ -47,55 +45,59 @@ class MasterDataExtraTest extends TestCase
             ->assertSee('Staff Finance')->assertDontSee('Staff IT Support');
     }
 
-    public function test_grup_akses_menawarkan_pilihan_dari_master_jabatan(): void
+    public function test_grup_akses_menawarkan_pilihan_dari_kombinasi_divisi_level_di_manajemen_user(): void
     {
-        $divisi = MasterDivisi::create(['nama_divisi' => 'IT']);
-        MasterJabatan::create(['nama_jabatan' => 'Manager IT', 'master_divisi_id' => $divisi->id, 'is_active' => true]);
-        MasterJabatan::create(['nama_jabatan' => 'Staff Nonaktif', 'is_active' => false]);
+        User::create(['name' => 'A', 'email' => 'a@example.test', 'password' => 'password', 'divisi' => 'HR', 'jabatan_level' => 'staff', 'is_active' => true]);
+        User::create(['name' => 'B', 'email' => 'b@example.test', 'password' => 'password', 'divisi' => 'HR', 'jabatan_level' => 'manager', 'is_active' => true]);
+        // Super Admin dan user nonaktif tidak ikut membentuk pilihan grup.
+        User::create(['name' => 'C', 'email' => 'c@example.test', 'password' => 'password', 'divisi' => 'HR', 'jabatan_level' => 'leader', 'role' => 'admin', 'is_active' => true]);
+        User::create(['name' => 'D', 'email' => 'd@example.test', 'password' => 'password', 'divisi' => 'Finance', 'jabatan_level' => 'staff', 'is_active' => false]);
 
         Livewire::test(GroupAccessManager::class)
-            ->assertSee('Berdasarkan Jabatan')
-            ->assertSee('Manager IT')
-            ->assertDontSee('Staff Nonaktif');
+            ->assertSee('Berdasarkan Divisi')
+            ->assertSee('HR — Staff')
+            ->assertSee('HR — Manager')
+            ->assertDontSee(MenuPermission::divisiLevelKey('HR', 'leader'), false)
+            ->assertDontSee(MenuPermission::divisiLevelKey('Finance', 'staff'), false);
     }
 
-    public function test_hak_akses_jabatan_menimpa_hak_akses_peran_untuk_user_dengan_jabatan_itu(): void
+    public function test_hak_akses_divisi_level_menimpa_hak_akses_peran_untuk_user_dengan_divisi_level_itu(): void
     {
-        $divisi = MasterDivisi::create(['nama_divisi' => 'HRD']);
-        $jabatan = MasterJabatan::create(['nama_jabatan' => 'Staff HR', 'master_divisi_id' => $divisi->id, 'is_active' => true]);
+        $key = MenuPermission::divisiLevelKey('HR', 'staff');
 
-        // Peran "hr" secara default melihat menu ga (fallback true kalau belum diatur), tapi kita matikan eksplisit.
+        // Peran "hr" secara default melihat menu master_karyawan, tapi kita matikan eksplisit untuk grup HR-Staff.
         MenuPermission::create(['role' => 'hr', 'menu_key' => 'master_karyawan', 'can_view' => true]);
-        MenuPermission::create(['role' => "jabatan:{$jabatan->id}", 'menu_key' => 'master_karyawan', 'can_view' => false]);
+        MenuPermission::create(['role' => $key, 'menu_key' => 'master_karyawan', 'can_view' => false]);
 
         $staffHr = User::create([
             'name' => 'Lidya', 'email' => 'lidya@example.test', 'password' => 'password',
-            'jabatan_level' => 'staff', 'role' => 'hr', 'jabatan' => 'Staff HR', 'is_active' => true,
+            'jabatan_level' => 'staff', 'role' => 'hr', 'divisi' => 'HR', 'is_active' => true,
         ]);
 
-        // aturan jabatan (false) menimpa aturan peran (true)
+        // aturan Divisi-Level (false) menimpa aturan peran (true)
         $this->assertFalse(MenuPermission::allowsForUser($staffHr, 'master_karyawan'));
 
-        $hrLain = User::create([
-            'name' => 'Prima', 'email' => 'prima@example.test', 'password' => 'password',
-            'jabatan_level' => 'staff', 'role' => 'hr', 'jabatan' => 'HR Recruitment', 'is_active' => true,
+        $managerHr = User::create([
+            'name' => 'Kemas', 'email' => 'kemas@example.test', 'password' => 'password',
+            'jabatan_level' => 'manager', 'role' => 'hr', 'divisi' => 'HR', 'is_active' => true,
         ]);
 
-        // HR lain yang jabatannya tidak cocok dengan grup jabatan tetap pakai aturan peran (true)
-        $this->assertTrue(MenuPermission::allowsForUser($hrLain, 'master_karyawan'));
+        // HR lain dengan Divisi-Level berbeda (HR-Manager) tetap pakai aturan peran (true)
+        $this->assertTrue(MenuPermission::allowsForUser($managerHr, 'master_karyawan'));
     }
 
-    public function test_simpan_hak_akses_grup_jabatan_dari_ui_dan_pesan_flash_menyebut_nama_jabatan(): void
+    public function test_simpan_hak_akses_grup_divisi_level_dari_ui_dan_pesan_flash_menyebut_divisi_level(): void
     {
-        $jabatan = MasterJabatan::create(['nama_jabatan' => 'Leader CRM', 'is_active' => true]);
+        User::create(['name' => 'Leader CRM', 'email' => 'leader.crm@example.test', 'password' => 'password', 'divisi' => 'CRM', 'jabatan_level' => 'leader', 'is_active' => true]);
+        $key = MenuPermission::divisiLevelKey('CRM', 'leader');
 
         Livewire::test(GroupAccessManager::class)
-            ->set('selectedRole', "jabatan:{$jabatan->id}")
+            ->set('selectedRole', $key)
             ->set('perms.erf.view', false)
             ->call('save')
-            ->assertSee('Leader CRM')
+            ->assertSee('CRM — Leader')
             ->assertSee('berhasil disimpan');
 
-        $this->assertFalse(MenuPermission::where('role', "jabatan:{$jabatan->id}")->where('menu_key', 'erf')->value('can_view'));
+        $this->assertFalse(MenuPermission::where('role', $key)->where('menu_key', 'erf')->value('can_view'));
     }
 }

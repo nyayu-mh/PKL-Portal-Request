@@ -17,18 +17,18 @@
                         <option value="{{ $key }}">{{ $label }}</option>
                     @endforeach
                 </optgroup>
-                @if (count($jabatanGroupOptions))
-                    <optgroup label="Berdasarkan Jabatan (Master Data &gt; Jabatan)">
-                        @foreach ($jabatanGroupOptions as $key => $label)
+                @if (count($divisiLevelGroupOptions))
+                    <optgroup label="Berdasarkan Divisi &amp; Level (dari Manajemen User)">
+                        @foreach ($divisiLevelGroupOptions as $key => $label)
                             <option value="{{ $key }}">{{ $label }}</option>
                         @endforeach
                     </optgroup>
                 @endif
             </select>
             <p class="mt-1 text-xs text-slate-400">
-                Grup jabatan berlaku untuk user yang field "Jabatan"-nya sama persis dengan nama jabatan tersebut (diatur di Manajemen User atau Data Karyawan).
-                Kalau grup jabatan mengatur menu tertentu secara eksplisit, aturannya <strong>menimpa</strong> aturan Peran untuk user itu.
-                Belum ada jabatan di daftar? Tambah dulu di Master Data &gt; Jabatan.
+                Grup Divisi &amp; Level berlaku untuk user yang field "Divisi" dan "Level"-nya sama persis (diatur di Manajemen User) — mis. "HR — Staff", "HR — Leader", "HR — Manager".
+                Kalau grup ini mengatur menu tertentu secara eksplisit, aturannya <strong>menimpa</strong> aturan Peran untuk user itu.
+                Daftarnya otomatis mengikuti kombinasi Divisi-Level yang benar-benar ada di data user aktif.
             </p>
         </div>
 

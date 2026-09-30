@@ -104,27 +104,19 @@ class User extends Authenticatable
     // ── Helper hak akses ──────────────────────────────────────────
 
     /**
-     * Kunci grup jabatan ("jabatan:<id>") untuk Setting > Manajemen Grup & Akses, dicocokkan dari field
-     * "Jabatan" (teks bebas) ke nama jabatan di Master Data > Jabatan (tidak peduli huruf besar/kecil).
-     * null kalau jabatannya kosong atau tidak cocok dengan Master Data manapun.
+     * Kunci grup Divisi-Level ("dl:<divisi>:<level>") untuk Setting > Manajemen Grup & Akses, dari field
+     * "Divisi" + "Level" di profil user sendiri (bukan Master Data). null kalau divisinya kosong, atau
+     * Super Admin (Super Admin selalu full akses, tidak ikut sistem grup ini).
      */
-    public function jabatanGroupKey(): ?string
+    public function divisiLevelGroupKey(): ?string
     {
-        if (! $this->jabatanGroupKeyResolved) {
-            $this->jabatanGroupKeyResolved = true;
-            $nama = trim((string) $this->jabatan);
-            $match = $nama !== ''
-                ? MasterJabatan::whereRaw('LOWER(nama_jabatan) = ?', [mb_strtolower($nama)])->first()
-                : null;
-            $this->cachedJabatanGroupKey = $match ? "jabatan:{$match->id}" : null;
+        $divisi = trim((string) $this->divisi);
+        if ($divisi === '' || $this->isAdmin()) {
+            return null;
         }
 
-        return $this->cachedJabatanGroupKey;
+        return MenuPermission::divisiLevelKey($divisi, $this->jabatan_level);
     }
-
-    private bool $jabatanGroupKeyResolved = false;
-
-    private ?string $cachedJabatanGroupKey = null;
 
     public function isAdmin(): bool
     {

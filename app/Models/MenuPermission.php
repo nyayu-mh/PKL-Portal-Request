@@ -58,24 +58,52 @@ class MenuPermission extends Model
     }
 
     /**
-     * Grup tambahan berdasarkan jabatan di Master Data > Jabatan (mis. "Manager", "Leader", "Staff HR").
-     * Kunci diberi awalan "jabatan:" supaya tidak bentrok dengan kunci role di atas. Kalau ada baris hak akses
-     * eksplisit untuk jabatan seorang user, aturannya menimpa aturan peran (lihat allowsForUser()).
-     *
-     * @return array<string, string> "jabatan:<id>" => "Nama Jabatan — Divisi"
+     * Kunci grup Divisi-Level untuk sepasang (divisi, level) — dipakai baik untuk membangun daftar pilihan
+     * maupun untuk mencocokkan seorang user ke grupnya. Divisi diambil apa adanya dari field "Divisi" di
+     * Manajemen User (bukan dari Master Data > Divisi), supaya sama persis dengan yang admin lihat di sana.
      */
-    public static function jabatanGroupOptions(): array
+    public static function divisiLevelKey(string $divisi, string $level): string
     {
-        return MasterJabatan::query()->where('is_active', true)->with('divisi')->get()
-            ->sortBy(fn (MasterJabatan $j) => mb_strtolower(($j->divisi->nama_divisi ?? 'zzz').' '.$j->nama_jabatan))
-            ->mapWithKeys(fn (MasterJabatan $j) => [
-                "jabatan:{$j->id}" => $j->nama_jabatan.($j->divisi ? ' — '.$j->divisi->nama_divisi : ''),
-            ])
-            ->all();
+        return 'dl:'.base64_encode(trim($divisi)).':'.$level;
     }
 
     /**
-     * Label yang enak dibaca untuk kunci grup apa pun (role biasa atau "jabatan:<id>") — dipakai di pesan flash.
+     * Grup tambahan berdasarkan kombinasi Divisi & Level yang benar-benar ada di data Manajemen User
+     * (mis. "HR — Staff", "HR — Leader", "HR — Manager"). Sistemnya memang berpusat pada pembagian
+     * Divisi-Level ini, jadi lebih gampang diatur dibanding per jabatan satu-satu. Kunci diberi awalan "dl:"
+     * supaya tidak bentrok dengan kunci role di atas. Kalau ada baris hak akses eksplisit untuk grup
+     * Divisi-Level seorang user, aturannya menimpa aturan peran (lihat allowsForUser()).
+     *
+     * @return array<string, string> "dl:<divisi base64>:<level>" => "Divisi — Level"
+     */
+    public static function divisiLevelGroupOptions(): array
+    {
+        $levelLabels = User::jabatanLevelLabels();
+        $levelOrder = array_flip(array_keys($levelLabels));
+
+        $combos = User::query()
+            ->where('role', '!=', 'admin')
+            ->where('is_active', true)
+            ->whereNotNull('divisi')->where('divisi', '!=', '')
+            ->select('divisi', 'jabatan_level')
+            ->distinct()
+            ->get()
+            ->map(fn ($row) => ['divisi' => trim($row->divisi), 'level' => $row->jabatan_level])
+            ->unique(fn ($c) => mb_strtolower($c['divisi']).'|'.$c['level'])
+            ->sort(fn ($a, $b) => [mb_strtolower($a['divisi']), $levelOrder[$a['level']] ?? 99]
+                <=> [mb_strtolower($b['divisi']), $levelOrder[$b['level']] ?? 99]);
+
+        $options = [];
+        foreach ($combos as $c) {
+            $options[static::divisiLevelKey($c['divisi'], $c['level'])] = $c['divisi'].' — '.($levelLabels[$c['level']] ?? $c['level']);
+        }
+
+        return $options;
+    }
+
+    /**
+     * Label yang enak dibaca untuk kunci grup apa pun (role biasa atau "dl:<divisi>:<level>") — dipakai di
+     * pesan flash.
      */
     public static function groupLabel(string $groupKey): string
     {
@@ -83,12 +111,11 @@ class MenuPermission extends Model
             return static::groupLabels()[$groupKey];
         }
 
-        if (str_starts_with($groupKey, 'jabatan:')) {
-            $jabatan = MasterJabatan::with('divisi')->find((int) substr($groupKey, 8));
+        if (str_starts_with($groupKey, 'dl:')) {
+            [, $divisiB64, $level] = array_pad(explode(':', $groupKey, 3), 3, '');
+            $divisi = base64_decode($divisiB64) ?: '(divisi tidak diketahui)';
 
-            return $jabatan
-                ? $jabatan->nama_jabatan.($jabatan->divisi ? ' — '.$jabatan->divisi->nama_divisi : '')
-                : 'Jabatan (sudah dihapus)';
+            return $divisi.' — '.(User::jabatanLevelLabels()[$level] ?? $level);
         }
 
         return $groupKey;
@@ -114,16 +141,16 @@ class MenuPermission extends Model
     }
 
     /**
-     * Hak akses efektif seorang user: kalau jabatannya (field "Jabatan" di profil, dicocokkan ke Master Data >
-     * Jabatan) punya aturan eksplisit untuk menu ini, aturan itu yang dipakai. Kalau tidak, pakai aturan
-     * berdasarkan peran (karyawan/hr/ga) seperti sebelumnya. null = belum diatur sama sekali, pakai default.
+     * Hak akses efektif seorang user: kalau grup Divisi-Levelnya (dari field Divisi + Level di profil)
+     * punya aturan eksplisit untuk menu ini, aturan itu yang dipakai. Kalau tidak, pakai aturan berdasarkan
+     * peran (karyawan/hr/ga) seperti sebelumnya. null = belum diatur sama sekali, pakai default.
      */
     public static function allowsForUser(User $user, string $menuKey, string $action = 'view'): ?bool
     {
-        if ($jabatanKey = $user->jabatanGroupKey()) {
-            $viaJabatan = static::allows($jabatanKey, $menuKey, $action);
-            if ($viaJabatan !== null) {
-                return $viaJabatan;
+        if ($divisiLevelKey = $user->divisiLevelGroupKey()) {
+            $viaDivisiLevel = static::allows($divisiLevelKey, $menuKey, $action);
+            if ($viaDivisiLevel !== null) {
+                return $viaDivisiLevel;
             }
         }
 

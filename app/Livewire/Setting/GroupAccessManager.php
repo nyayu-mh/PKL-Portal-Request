@@ -67,7 +67,7 @@ class GroupAccessManager extends Component
     {
         return view('livewire.setting.group-access-manager', [
             'roleGroupOptions' => MenuPermission::groupLabels(),
-            'jabatanGroupOptions' => MenuPermission::jabatanGroupOptions(),
+            'divisiLevelGroupOptions' => MenuPermission::divisiLevelGroupOptions(),
             'menuOptions' => MenuPermission::menuList(),
         ]);
     }

@@ -16,9 +16,12 @@ class ErfRequest extends Model
      * dashboard, dan halaman detail. User hanya boleh melihat ERF:
      *  - yang ia buat sendiri, atau
      *  - yang atasan langsungnya adalah dia (untuk approval), atau
-     *  - kalau ia Tim HR: semua ERF yang approval atasannya sudah beres (disetujui / tidak perlu approval).
+     *  - kalau ia Tim HR: ERF yang approval atasannya sudah beres (disetujui / tidak perlu approval) DAN
+     *    PIC HR-nya adalah dia sendiri (atau belum ada PIC-nya) — supaya ERF milik PIC HR lain tidak ikut
+     *    tampil (mis. ERF PIC Prima tidak muncul di akun Lidya).
      * Super Admin bisa melihat semuanya. User bercentang "lihat semua request" (mis. Manager HRBP) juga
-     * melihat semua request yang approval atasannya sudah beres, sama seperti Tim HR. Tim GA sama sekali tidak punya akses ke modul ERF.
+     * melihat semua request yang approval atasannya sudah beres — tanpa dibatasi PIC — sama seperti tujuan
+     * hak itu untuk memantau lintas PIC. Tim GA sama sekali tidak punya akses ke modul ERF.
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
@@ -34,8 +37,15 @@ class ErfRequest extends Model
             $q->where('user_id', $user->id)
                 ->orWhere('atasan_user_id', $user->id);
 
-            if ($user->isHr() || $user->lihat_semua_request) {
+            if ($user->lihat_semua_request) {
                 $q->orWhereIn('approval_status', ['disetujui', 'tidak_perlu']);
+            } elseif ($user->isHr()) {
+                $q->orWhere(function (Builder $q2) use ($user) {
+                    $q2->whereIn('approval_status', ['disetujui', 'tidak_perlu'])
+                        ->where(function (Builder $q3) use ($user) {
+                            $q3->where('pic_hr_user_id', $user->id)->orWhereNull('pic_hr_user_id');
+                        });
+                });
             }
         });
     }
@@ -46,10 +56,23 @@ class ErfRequest extends Model
             return true;
         }
 
-        return $user->canAccessErf()
-            && ($this->user_id === $user->id
-                || $this->atasan_user_id === $user->id
-                || (($user->isHr() || $user->lihat_semua_request) && $this->isApprovedForProcessing()));
+        if (! $user->canAccessErf()) {
+            return false;
+        }
+
+        if ($this->user_id === $user->id || $this->atasan_user_id === $user->id) {
+            return true;
+        }
+
+        if (! $this->isApprovedForProcessing()) {
+            return false;
+        }
+
+        if ($user->lihat_semua_request) {
+            return true;
+        }
+
+        return $user->isHr() && (is_null($this->pic_hr_user_id) || $this->pic_hr_user_id === $user->id);
     }
 
     protected $fillable = [
