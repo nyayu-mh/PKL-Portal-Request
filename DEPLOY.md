@@ -44,7 +44,7 @@ Cara termudah — pakai file `render.yaml` yang sudah saya siapkan (Render menye
 
    | Env Var | Isi dengan |
    |---|---|
-   | `APP_KEY` | `base64:1hNbUenli6MatdeaxBRVDiv5obGCF2oP9m8r705axng=` (pakai persis ini, atau generate baru dari laptop Anda dengan `php artisan key:generate --show`) |
+   | `APP_KEY` | Buat key BARU dengan `php artisan key:generate --show` (hasilnya berawalan `base64:`). Jangan pernah menulis key asli di file yang di-commit |
    | `APP_URL` | Isi setelah deploy pertama jadi (Render kasih tahu URL-nya, formatnya `https://portal-request-btc.onrender.com`) — boleh dikosongkan dulu, isi belakangan lalu redeploy |
    | `DB_HOST` | Host dari Neon (Langkah 1) |
    | `DB_DATABASE` | Nama database dari Neon |
@@ -55,7 +55,9 @@ Cara termudah — pakai file `render.yaml` yang sudah saya siapkan (Render menye
 5. Setelah selesai dan statusnya **Live**, buka URL yang diberikan Render (`https://portal-request-btc.onrender.com`). Halaman login BTC seharusnya muncul.
 6. Login pakai akun contoh dari PANDUAN.md (misalnya `admin@brilliantthinkcenter.com` / `password`) — saat pertama kali start, aplikasi otomatis mengisi data contoh ke database Neon (lewat perintah `app:seed-if-empty` yang sudah saya siapkan, aman dijalankan berkali-kali).
 
-> Kalau lebih suka isi manual tanpa Blueprint: **New +** → **Web Service** → pilih repo → Environment pilih **Docker** → Plan **Free** → isi Environment Variables satu-satu sesuai daftar di `render.yaml`.
+> **Disarankan jika Blueprint meminta kartu kredit:** pakai cara manual di bawah ini, dan taruh database di Neon (bukan database Render).
+>
+> Cara manual tanpa Blueprint: **New +** → **Web Service** → pilih repo → Environment pilih **Docker** → Plan **Free** → isi Environment Variables satu-satu sesuai daftar di `render.yaml`.
 
 ---
 
